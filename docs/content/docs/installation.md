@@ -9,7 +9,7 @@ The easiest way to install vibe on macOS and Linux is via Homebrew:
 
 ```bash
 brew tap skymoore/tap
-brew install vibe
+brew install --cask vibe-zsh
 ```
 
 Add the following line to your `~/.zshrc`:
@@ -116,7 +116,7 @@ echo "test"
 To uninstall vibe installed via Homebrew:
 
 ```bash
-brew uninstall vibe
+brew uninstall --cask vibe-zsh
 brew untap skymoore/tap  # Optional: remove the tap
 ```
 
