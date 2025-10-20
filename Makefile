@@ -2,15 +2,16 @@
 
 BINARY_NAME=vibe
 INSTALL_PATH=$(HOME)/.oh-my-zsh/custom/plugins/vibe
+VERSION?=dev
 
 build:
-	go build -o $(BINARY_NAME) main.go
+	go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME) main.go
 
 build-all:
-	GOOS=darwin GOARCH=amd64 go build -o $(BINARY_NAME)-darwin-amd64 main.go
-	GOOS=darwin GOARCH=arm64 go build -o $(BINARY_NAME)-darwin-arm64 main.go
-	GOOS=linux GOARCH=amd64 go build -o $(BINARY_NAME)-linux-amd64 main.go
-	GOOS=linux GOARCH=arm64 go build -o $(BINARY_NAME)-linux-arm64 main.go
+	GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-darwin-amd64 main.go
+	GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-darwin-arm64 main.go
+	GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-linux-amd64 main.go
+	GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY_NAME)-linux-arm64 main.go
 
 install: build
 	mkdir -p $(INSTALL_PATH)

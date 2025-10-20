@@ -158,6 +158,11 @@ export VIBE_INTERACTIVE=true
 export VIBE_ENABLE_CACHE=false
 ```
 
+**Disable Auto-Updates:**
+```bash
+export VIBE_AUTO_UPDATE=false
+```
+
 ## Configuration Reference
 
 | Variable | Default | Description |
@@ -173,6 +178,8 @@ export VIBE_ENABLE_CACHE=false
 | `VIBE_ENABLE_CACHE` | `true` | Enable response caching |
 | `VIBE_CACHE_TTL` | `24h` | Cache lifetime |
 | `VIBE_INTERACTIVE` | `false` | Confirm before inserting |
+| `VIBE_AUTO_UPDATE` | `true` | Enable auto-update checks |
+| `VIBE_UPDATE_CHECK_INTERVAL` | `7d` | How often to check for updates |
 
 ## How It Works
 
@@ -198,6 +205,35 @@ export VIBE_ENABLE_CACHE=false
 - ✅ Warnings for dangerous commands
 - ✅ Optional interactive confirmation mode
 - ✅ Local-first with Ollama (your data stays private)
+
+## Updates
+
+vibe automatically checks for updates once a week in the background (zero impact on performance). When an update is available, you'll see a notification:
+
+```
+⚠️  vibe v1.2.4 available (current: v1.2.3)
+   Run: vibe --update
+```
+
+**Manual Commands:**
+```bash
+vibe --version              # Show current version
+vibe --update               # Download and install latest version
+```
+
+**Configuration:**
+```bash
+export VIBE_AUTO_UPDATE=false           # Disable auto-update checks
+export VIBE_UPDATE_CHECK_INTERVAL=14d   # Check every 2 weeks instead
+```
+
+**Security:**
+- All downloads are verified using SHA256 checksums
+- Checksums are published with each release
+- Original binary is backed up before replacement
+- Safe atomic file replacement
+
+The update check runs in a background process after each command, so it never slows down your workflow. Updates are never installed automatically - you always control when to update.
 
 ## Troubleshooting
 
