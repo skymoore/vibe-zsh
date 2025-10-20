@@ -3,9 +3,32 @@ title: "Installation"
 weight: 1
 ---
 
-## One-Line Install
+## Homebrew (Recommended)
 
-The easiest way to install vibe is using our automated installation script:
+The easiest way to install vibe on macOS and Linux is via Homebrew:
+
+```bash
+brew tap skymoore/tap
+brew install vibe
+```
+
+Add the following line to your `~/.zshrc`:
+
+```bash
+source "$(brew --prefix)/opt/vibe/libexec/vibe.plugin.zsh"
+```
+
+Then reload your shell:
+
+```bash
+source ~/.zshrc
+```
+
+Zsh completions are installed automatically.
+
+## Oh-My-Zsh Plugin
+
+If you use Oh-My-Zsh and prefer plugin-based installation, use our automated installation script:
 
 {{< tabs >}}
 

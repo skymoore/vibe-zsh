@@ -1,0 +1,102 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: vibe
+    main: ./main.go
+    binary: vibe-{{ .Os }}-{{ .Arch }}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+    no_unique_dist_dir: true
+
+archives:
+  - id: vibe
+    format: tar.gz
+    name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    files:
+      - vibe.plugin.zsh
+      - _vibe
+      - README.md
+      - LICENSE
+    builds:
+      - vibe
+    rlcp: true
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: vibe
+    repository:
+      owner: skymoore
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    folder: Formula
+    homepage: https://github.com/skymoore/vibe-zsh
+    description: "Transform natural language into shell commands using AI"
+    license: GPL-3.0
+    install: |
+      bin.install "vibe-#{OS.kernel_name.downcase}-#{Hardware::CPU.arch}" => "vibe"
+      libexec.install "vibe.plugin.zsh"
+      zsh_completion.install "_vibe"
+    caveats: |
+      To activate vibe, add the following line to your ~/.zshrc file:
+
+        source "$(brew --prefix)/opt/vibe/libexec/vibe.plugin.zsh"
+
+      Then, restart your shell or run:
+        source ~/.zshrc
+
+      Zsh completions have been installed automatically.
+
+      Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
+        export VIBE_API_URL="http://localhost:11434/v1"
+        export VIBE_MODEL="llama3:8b"
+
+      Use Ctrl+G to transform natural language into commands!
+
+release:
+  github:
+    owner: skymoore
+    name: vibe-zsh
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## Installation
+
+    ### Homebrew (Recommended)
+    ```bash
+    brew tap skymoore/tap
+    brew install vibe
+    ```
+
+    ### One-line install script
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/skymoore/vibe-zsh/main/install.sh | bash
+    ```
+
+    See the [README](https://github.com/skymoore/vibe-zsh#installation) for more installation options.

@@ -24,9 +24,28 @@ docker ps -a
 - 📚 **Learn while you work** - Inline explanations for every command
 - 🎯 **Zero dependencies** - Single compiled binary
 
-## Quick Start
+## Installation
 
-### One-Line Install
+### Homebrew (Recommended)
+
+```bash
+brew tap skymoore/tap
+brew install vibe
+```
+
+Add to your `~/.zshrc`:
+```bash
+source $(brew --prefix)/opt/vibe/libexec/vibe.plugin.zsh
+```
+
+Then reload your shell:
+```bash
+source ~/.zshrc
+```
+
+### Oh-My-Zsh Plugin
+
+For oh-my-zsh integration:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/skymoore/vibe-zsh/main/install.sh | bash
@@ -37,6 +56,8 @@ Or using wget:
 ```bash
 wget -qO- https://raw.githubusercontent.com/skymoore/vibe-zsh/main/install.sh | bash
 ```
+
+This installs vibe as an oh-my-zsh plugin and automatically adds it to your plugins list.
 
 ### Manual Install
 

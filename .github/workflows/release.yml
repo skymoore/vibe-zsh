@@ -9,130 +9,25 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build ${{ matrix.os }}-${{ matrix.arch }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - os: darwin
-            arch: amd64
-            runner: macos-latest
-          - os: darwin
-            arch: arm64
-            runner: macos-latest
-          - os: linux
-            arch: amd64
-            runner: ubuntu-latest
-          - os: linux
-            arch: arm64
-            runner: ubuntu-latest
-    
+  release:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
 
-      - name: Get version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Build binary
-        env:
-          GOOS: ${{ matrix.os }}
-          GOARCH: ${{ matrix.arch }}
-        run: |
-          go build -o vibe-${{ matrix.os }}-${{ matrix.arch }} \
-            -ldflags "-s -w -X main.version=${{ steps.version.outputs.VERSION }}" \
-            main.go
-
-      - name: Run tests
-        if: matrix.os == 'linux' && matrix.arch == 'amd64'
-        run: go test ./...
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          name: vibe-${{ matrix.os }}-${{ matrix.arch }}
-          path: vibe-${{ matrix.os }}-${{ matrix.arch }}
-          retention-days: 1
-
-  release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Prepare release assets
-        run: |
-          mkdir -p ./release
-          find ./artifacts -type f -name "vibe-*" -exec mv {} ./release/ \;
-          chmod +x ./release/vibe-*
-
-      - name: Generate checksums
-        run: |
-          cd ./release
-          sha256sum vibe-* > checksums.txt
-          cat checksums.txt
-
-      - name: Get version
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Generate release notes
-        id: notes
-        run: |
-          cat > release-notes.md << 'EOF'
-          ## Installation
-
-          ### One-line install (recommended):
-          ```bash
-          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh | bash
-          ```
-
-          ### Manual install:
-          Download the binary for your platform below, make it executable, and place it in your oh-my-zsh plugins directory.
-
-          ## Binaries
-
-          - **macOS (Intel)**: `vibe-darwin-amd64`
-          - **macOS (Apple Silicon)**: `vibe-darwin-arm64`
-          - **Linux (x64)**: `vibe-linux-amd64`
-          - **Linux (ARM64)**: `vibe-linux-arm64`
-
-          ## Verification
-
-          SHA256 checksums are provided in `checksums.txt`. Verify your download with:
-          ```bash
-          sha256sum -c checksums.txt --ignore-missing
-          ```
-
-          ## What's Changed
-
-          See the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for full documentation.
-          EOF
-
-      - name: Create release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Release ${{ steps.version.outputs.VERSION }}
-          body_path: release-notes.md
-          files: |
-            ./release/vibe-*
-            ./release/checksums.txt
-          draft: false
-          prerelease: ${{ contains(steps.version.outputs.VERSION, 'alpha') || contains(steps.version.outputs.VERSION, 'beta') || contains(steps.version.outputs.VERSION, 'rc') }}
+          distribution: goreleaser
+          version: latest
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
