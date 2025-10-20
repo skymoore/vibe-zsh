@@ -43,23 +43,22 @@ changelog:
       - Merge pull request
       - Merge branch
 
-brews:
+homebrew_casks:
   - repository:
       owner: skymoore
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    directory: Formula
     homepage: https://github.com/skymoore/vibe-zsh
     description: "Transform natural language into shell commands using AI"
     license: GPL-3.0
     install: |
-      bin.install "vibe"
-      libexec.install "vibe.plugin.zsh"
-      zsh_completion.install "_vibe"
+      binary.install "vibe"
+      staged_path.install "vibe.plugin.zsh"
+      (zsh_completion / "_vibe").write staged_path.read("_vibe")
     caveats: |
       To activate vibe, add the following line to your ~/.zshrc file:
 
-        source "$(brew --prefix)/opt/vibe/libexec/vibe.plugin.zsh"
+        source "#{HOMEBREW_PREFIX}/Caskroom/vibe/#{version}/vibe.plugin.zsh"
 
       Then, restart your shell or run:
         source ~/.zshrc
