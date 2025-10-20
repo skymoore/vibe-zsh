@@ -109,6 +109,59 @@ echo "test"
 # Then press Ctrl+G
 ```
 
+## Uninstalling
+
+### Homebrew
+
+To uninstall vibe installed via Homebrew:
+
+```bash
+brew uninstall vibe
+brew untap skymoore/tap  # Optional: remove the tap
+```
+
+Then remove the `source` line from your `~/.zshrc` and reload your shell:
+
+```bash
+source ~/.zshrc
+```
+
+### Oh-My-Zsh Plugin
+
+To uninstall vibe installed as an Oh-My-Zsh plugin:
+
+{{< tabs >}}
+
+{{< tab name="curl" >}}
+```bash
+curl -fsSL https://raw.githubusercontent.com/skymoore/vibe-zsh/main/uninstall.sh | bash
+```
+{{< /tab >}}
+
+{{< tab name="wget" >}}
+```bash
+wget -qO- https://raw.githubusercontent.com/skymoore/vibe-zsh/main/uninstall.sh | bash
+```
+{{< /tab >}}
+
+{{< /tabs >}}
+
+Then remove `vibe` from your plugins list in `~/.zshrc` and reload:
+
+```bash
+source ~/.zshrc
+```
+
+### Manual Uninstall
+
+If you installed manually, simply remove the plugin directory:
+
+```bash
+rm -rf ~/.oh-my-zsh/custom/plugins/vibe
+```
+
+Then remove `vibe` from your plugins list in `~/.zshrc` and reload your shell.
+
 ## Next Steps
 
 After installation, you'll want to [configure your API settings]({{< relref "configuration" >}}).

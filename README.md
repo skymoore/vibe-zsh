@@ -285,6 +285,34 @@ The update check runs in a background process after each command, so it never sl
 - macOS or Linux
 - No external dependencies!
 
+## Uninstalling
+
+### Homebrew
+
+```bash
+brew uninstall vibe
+brew untap skymoore/tap  # Optional: remove the tap
+```
+
+Then remove the `source` line from your `~/.zshrc`.
+
+### Oh-My-Zsh Plugin
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/skymoore/vibe-zsh/main/uninstall.sh | bash
+```
+
+Or using wget:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/skymoore/vibe-zsh/main/uninstall.sh | bash
+```
+
+Then remove `vibe` from your plugins list in `~/.zshrc` and reload:
+```bash
+source ~/.zshrc
+```
+
 ## Building from Source
 
 ```bash
