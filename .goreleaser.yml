@@ -24,13 +24,18 @@ builds:
 
 archives:
   - id: vibe
-    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
     name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     files:
       - vibe.plugin.zsh
       - _vibe
       - README.md
       - LICENSE
+  - id: binary
+    format: binary
+    name_template: "{{ .Binary }}"
 
 checksum:
   name_template: 'checksums.txt'
@@ -46,8 +51,7 @@ changelog:
       - Merge branch
 
 brews:
-  - name: vibe
-    repository:
+  - repository:
       owner: skymoore
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
