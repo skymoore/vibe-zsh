@@ -51,23 +51,18 @@ homebrew_casks:
     homepage: https://github.com/skymoore/vibe-zsh
     description: "Transform natural language into shell commands using AI"
     license: GPL-3.0
-    binaries:
-      - vibe
-    completions:
-      zsh: _vibe
-    hooks:
-      post:
-        install: |
-          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/vibe"]
     caveats: |
-      To activate vibe, add the following line to your ~/.zshrc file:
+      vibe has been installed to:
+        #{staged_path}
 
-        source "#{HOMEBREW_PREFIX}/Caskroom/vibe/#{version}/vibe.plugin.zsh"
+      To activate vibe, add the following to your ~/.zshrc:
 
-      Then, restart your shell or run:
+        export PATH="#{staged_path}:$PATH"
+        source "#{staged_path}/vibe.plugin.zsh"
+        fpath=(#{staged_path} $fpath)
+
+      Then reload your shell:
         source ~/.zshrc
-
-      Zsh completions have been installed automatically.
 
       Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
         export VIBE_API_URL="http://localhost:11434/v1"
