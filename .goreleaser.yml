@@ -31,9 +31,6 @@ archives:
       - _vibe
       - README.md
       - LICENSE
-    builds:
-      - vibe
-    rlcp: true
 
 checksum:
   name_template: 'checksums.txt'
@@ -54,7 +51,7 @@ brews:
       owner: skymoore
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    folder: Formula
+    directory: Formula
     homepage: https://github.com/skymoore/vibe-zsh
     description: "Transform natural language into shell commands using AI"
     license: GPL-3.0
