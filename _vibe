@@ -1,0 +1,26 @@
+#compdef vibe
+
+_vibe() {
+  local -a completions
+  
+  completions=(
+    'list files:List files in a directory'
+    'show processes:Show running processes'
+    'find files:Find files by name or pattern'
+    'docker containers:Show docker containers'
+    'docker logs:View docker container logs'
+    'git status:Show git repository status'
+    'git commit:Commit changes to git'
+    'search text:Search for text in files'
+    'compress files:Compress or archive files'
+    'network info:Show network information'
+    'disk usage:Show disk usage statistics'
+    'memory usage:Show memory usage'
+    'kill process:Terminate a process'
+    'install package:Install a system package'
+  )
+  
+  _describe 'common queries' completions
+}
+
+_vibe "$@"
