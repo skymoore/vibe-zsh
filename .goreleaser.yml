@@ -57,16 +57,16 @@ homebrew_casks:
 
       To activate vibe, add the following to your ~/.zshrc:
 
-        export PATH="#{staged_path}:$PATH"
-        source "#{staged_path}/vibe.plugin.zsh"
+        export PATH=\"#{staged_path}:$PATH\"
+        source \"#{staged_path}/vibe.plugin.zsh\"
         fpath=(#{staged_path} $fpath)
 
       Then reload your shell:
         source ~/.zshrc
 
       Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
-        export VIBE_API_URL="http://localhost:11434/v1"
-        export VIBE_MODEL="llama3:8b"
+        export VIBE_API_URL=\"http://localhost:11434/v1\"
+        export VIBE_MODEL=\"llama3:8b\"
 
       Use Ctrl+G to transform natural language into commands!
 
