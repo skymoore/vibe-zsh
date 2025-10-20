@@ -1,0 +1,6 @@
+vibe
+vibe-*
+*.swp
+*.swo
+*~
+.DS_Store
