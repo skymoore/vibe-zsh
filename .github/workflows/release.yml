@@ -81,6 +81,12 @@ jobs:
           find ./artifacts -type f -name "vibe-*" -exec mv {} ./release/ \;
           chmod +x ./release/vibe-*
 
+      - name: Generate checksums
+        run: |
+          cd ./release
+          sha256sum vibe-* > checksums.txt
+          cat checksums.txt
+
       - name: Get version
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
@@ -106,6 +112,13 @@ jobs:
           - **Linux (x64)**: `vibe-linux-amd64`
           - **Linux (ARM64)**: `vibe-linux-arm64`
 
+          ## Verification
+
+          SHA256 checksums are provided in `checksums.txt`. Verify your download with:
+          ```bash
+          sha256sum -c checksums.txt --ignore-missing
+          ```
+
           ## What's Changed
 
           See the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for full documentation.
@@ -116,7 +129,9 @@ jobs:
         with:
           name: Release ${{ steps.version.outputs.VERSION }}
           body_path: release-notes.md
-          files: ./release/vibe-*
+          files: |
+            ./release/vibe-*
+            ./release/checksums.txt
           draft: false
           prerelease: ${{ contains(steps.version.outputs.VERSION, 'alpha') || contains(steps.version.outputs.VERSION, 'beta') || contains(steps.version.outputs.VERSION, 'rc') }}
         env:

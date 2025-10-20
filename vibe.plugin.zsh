@@ -30,6 +30,8 @@ function vibe() {
   else
     zle -M "vibe: Failed to generate command${cmd:+ - }${cmd}"
   fi
+  
+  (nohup "$VIBE_BINARY" --check-update-background >/dev/null 2>&1 &)
 }
 
 zle -N vibe

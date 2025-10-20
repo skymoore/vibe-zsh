@@ -64,10 +64,33 @@ if [ -z "$LATEST_RELEASE" ]; then
 else
     echo "📥 Downloading release ${LATEST_RELEASE}..."
     DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_RELEASE}/${BINARY}"
+    CHECKSUMS_URL="https://github.com/${REPO}/releases/download/${LATEST_RELEASE}/checksums.txt"
     
     if ! curl -fsSL "$DOWNLOAD_URL" -o vibe; then
         echo "❌ Failed to download binary"
         exit 1
+    fi
+    
+    echo "🔐 Verifying checksum..."
+    if curl -fsSL "$CHECKSUMS_URL" -o checksums.txt 2>/dev/null; then
+        if command -v sha256sum &> /dev/null; then
+            if echo "$(grep "$BINARY" checksums.txt)" | sha256sum -c --status 2>/dev/null; then
+                echo "✓ Checksum verified"
+            else
+                echo "⚠️  Checksum verification failed, but continuing..."
+            fi
+        elif command -v shasum &> /dev/null; then
+            EXPECTED=$(grep "$BINARY" checksums.txt | awk '{print $1}')
+            ACTUAL=$(shasum -a 256 vibe | awk '{print $1}')
+            if [ "$EXPECTED" = "$ACTUAL" ]; then
+                echo "✓ Checksum verified"
+            else
+                echo "⚠️  Checksum verification failed, but continuing..."
+            fi
+        fi
+        rm -f checksums.txt
+    else
+        echo "⚠️  Could not download checksums, skipping verification"
     fi
     
     chmod +x vibe
