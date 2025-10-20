@@ -8,7 +8,7 @@ before:
 builds:
   - id: vibe
     main: ./main.go
-    binary: vibe-{{ .Os }}-{{ .Arch }}
+    binary: vibe
     env:
       - CGO_ENABLED=0
     goos:
@@ -20,22 +20,15 @@ builds:
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
-    no_unique_dist_dir: true
 
 archives:
   - id: vibe
-    format_overrides:
-      - goos: windows
-        format: zip
     name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     files:
       - vibe.plugin.zsh
       - _vibe
       - README.md
       - LICENSE
-  - id: binary
-    format: binary
-    name_template: "{{ .Binary }}"
 
 checksum:
   name_template: 'checksums.txt'
@@ -60,7 +53,7 @@ brews:
     description: "Transform natural language into shell commands using AI"
     license: GPL-3.0
     install: |
-      bin.install "vibe-#{OS.kernel_name.downcase}-#{Hardware::CPU.arch}" => "vibe"
+      bin.install "vibe"
       libexec.install "vibe.plugin.zsh"
       zsh_completion.install "_vibe"
     caveats: |

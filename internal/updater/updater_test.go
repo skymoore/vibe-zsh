@@ -1,8 +1,10 @@
 package updater
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -113,21 +115,18 @@ func TestGetBinaryName(t *testing.T) {
 		t.Error("Binary name should not be empty")
 	}
 
-	if len(name) < 5 {
-		t.Errorf("Binary name seems too short: %s", name)
+	expected := "vibe"
+	if name != expected {
+		t.Errorf("Expected binary name %s, got %s", expected, name)
 	}
 }
 
 func TestGetDownloadURL(t *testing.T) {
 	url := getDownloadURL("v1.2.3")
-	expected := "https://github.com/skymoore/vibe-zsh/releases/download/v1.2.3/vibe-"
+	expected := fmt.Sprintf("https://github.com/skymoore/vibe-zsh/releases/download/v1.2.3/vibe-zsh-v1.2.3-%s-%s.tar.gz", runtime.GOOS, runtime.GOARCH)
 
-	if len(url) < len(expected) {
-		t.Errorf("Download URL seems too short: %s", url)
-	}
-
-	if url[:len(expected)] != expected {
-		t.Errorf("Download URL has wrong prefix: %s", url)
+	if url != expected {
+		t.Errorf("Expected URL %s, got %s", expected, url)
 	}
 }
 

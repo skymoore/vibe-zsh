@@ -1,7 +1,9 @@
 package updater
 
 import (
+	"archive/tar"
 	"bufio"
+	"compress/gzip"
 	"crypto/sha256"
 	"fmt"
 	"io"
@@ -13,13 +15,17 @@ import (
 	"time"
 )
 
+func getArchiveName(version string) string {
+	return fmt.Sprintf("vibe-zsh-%s-%s-%s.tar.gz", version, runtime.GOOS, runtime.GOARCH)
+}
+
 func getBinaryName() string {
-	return fmt.Sprintf("vibe-%s-%s", runtime.GOOS, runtime.GOARCH)
+	return "vibe"
 }
 
 func getDownloadURL(version string) string {
-	binaryName := getBinaryName()
-	return fmt.Sprintf("https://github.com/skymoore/vibe-zsh/releases/download/%s/%s", version, binaryName)
+	archiveName := getArchiveName(version)
+	return fmt.Sprintf("https://github.com/skymoore/vibe-zsh/releases/download/%s/%s", version, archiveName)
 }
 
 func getChecksumsURL(version string) string {
@@ -57,6 +63,48 @@ func downloadFile(url string, dest string) error {
 
 	_, err = io.Copy(out, resp.Body)
 	return err
+}
+
+func extractBinary(archivePath, destPath string) error {
+	file, err := os.Open(archivePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	gzr, err := gzip.NewReader(file)
+	if err != nil {
+		return err
+	}
+	defer gzr.Close()
+
+	tr := tar.NewReader(gzr)
+
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		if header.Name == "vibe" || strings.HasSuffix(header.Name, "/vibe") {
+			out, err := os.Create(destPath)
+			if err != nil {
+				return err
+			}
+			defer out.Close()
+
+			if _, err := io.Copy(out, tr); err != nil {
+				return err
+			}
+
+			return nil
+		}
+	}
+
+	return fmt.Errorf("vibe binary not found in archive")
 }
 
 func verifyBinary(path string) error {
@@ -125,31 +173,39 @@ func PerformUpdate(currentVersion string) error {
 		checksums = nil
 	}
 
-	tmpFile := filepath.Join(os.TempDir(), fmt.Sprintf("vibe-new-%d", time.Now().Unix()))
-	defer os.Remove(tmpFile)
+	tmpArchive := filepath.Join(os.TempDir(), fmt.Sprintf("vibe-archive-%d.tar.gz", time.Now().Unix()))
+	defer os.Remove(tmpArchive)
 
 	downloadURL := getDownloadURL(targetVersion)
 	fmt.Printf("Downloading %s...\n", downloadURL)
 
-	if err := downloadFile(downloadURL, tmpFile); err != nil {
+	if err := downloadFile(downloadURL, tmpArchive); err != nil {
 		return fmt.Errorf("download failed: %w", err)
 	}
 
-	if err := verifyBinary(tmpFile); err != nil {
-		return fmt.Errorf("binary verification failed: %w", err)
-	}
-
 	if checksums != nil {
-		binaryName := getBinaryName()
-		if expectedChecksum, ok := checksums[binaryName]; ok {
+		archiveName := getArchiveName(targetVersion)
+		if expectedChecksum, ok := checksums[archiveName]; ok {
 			fmt.Println("Verifying checksum...")
-			if err := verifyChecksum(tmpFile, expectedChecksum); err != nil {
+			if err := verifyChecksum(tmpArchive, expectedChecksum); err != nil {
 				return fmt.Errorf("checksum verification failed: %w", err)
 			}
 			fmt.Println("✓ Checksum verified")
 		} else {
-			fmt.Fprintf(os.Stderr, "Warning: No checksum found for %s\n", binaryName)
+			fmt.Fprintf(os.Stderr, "Warning: No checksum found for %s\n", archiveName)
 		}
+	}
+
+	tmpFile := filepath.Join(os.TempDir(), fmt.Sprintf("vibe-new-%d", time.Now().Unix()))
+	defer os.Remove(tmpFile)
+
+	fmt.Println("Extracting binary...")
+	if err := extractBinary(tmpArchive, tmpFile); err != nil {
+		return fmt.Errorf("extraction failed: %w", err)
+	}
+
+	if err := verifyBinary(tmpFile); err != nil {
+		return fmt.Errorf("binary verification failed: %w", err)
 	}
 
 	if err := os.Chmod(tmpFile, 0755); err != nil {
