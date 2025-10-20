@@ -1,15 +1,14 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
 
 	"github.com/skymoore/vibe-zsh/internal/config"
+	vibeErrors "github.com/skymoore/vibe-zsh/internal/errors"
+	"github.com/skymoore/vibe-zsh/internal/parser"
 	"github.com/skymoore/vibe-zsh/internal/schema"
 )
 
@@ -79,10 +78,9 @@ func (c *Client) GenerateCommand(ctx context.Context, query string) (*schema.Com
 		if err == nil {
 			return resp, nil
 		}
-		return nil, fmt.Errorf("structured output failed: %w", err)
 	}
 
-	return nil, fmt.Errorf("structured output disabled and fallback not yet implemented")
+	return c.generateWithTextParsing(ctx, query)
 }
 
 func (c *Client) generateWithStructuredOutput(ctx context.Context, query string) (*schema.CommandResponse, error) {
@@ -113,52 +111,52 @@ func (c *Client) generateWithStructuredOutput(ctx context.Context, query string)
 		},
 	}
 
-	reqBody, err := json.Marshal(req)
+	chatResp, err := c.doRequest(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
-	}
-
-	url := strings.TrimSuffix(c.config.APIURL, "/") + "/chat/completions"
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(reqBody))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	httpReq.Header.Set("Content-Type", "application/json")
-	if c.config.APIKey != "" {
-		httpReq.Header.Set("Authorization", "Bearer "+c.config.APIKey)
-	}
-
-	resp, err := c.httpClient.Do(httpReq)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(body))
-	}
-
-	var chatResp ChatCompletionResponse
-	if err := json.Unmarshal(body, &chatResp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	if len(chatResp.Choices) == 0 {
-		return nil, fmt.Errorf("no choices in response")
+		return nil, err
 	}
 
 	content := chatResp.Choices[0].Message.Content
 
 	var cmdResp schema.CommandResponse
 	if err := json.Unmarshal([]byte(content), &cmdResp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal command response (content: %q): %w", content, err)
+		return nil, fmt.Errorf("%w: failed to parse JSON content", vibeErrors.ErrInvalidJSON)
 	}
 
 	return &cmdResp, nil
+}
+
+func (c *Client) generateWithTextParsing(ctx context.Context, query string) (*schema.CommandResponse, error) {
+	messages := []Message{
+		{
+			Role:    "system",
+			Content: schema.SystemPrompt,
+		},
+		{
+			Role:    "user",
+			Content: query,
+		},
+	}
+
+	req := ChatCompletionRequest{
+		Model:       c.config.Model,
+		Messages:    messages,
+		Temperature: c.config.Temperature,
+		MaxTokens:   c.config.MaxTokens,
+		Stream:      false,
+	}
+
+	chatResp, err := c.doRequest(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	content := chatResp.Choices[0].Message.Content
+
+	cmdResp, err := parser.ParseTextResponse(content)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse text response: %w", err)
+	}
+
+	return cmdResp, nil
 }

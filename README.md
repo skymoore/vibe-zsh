@@ -601,3 +601,53 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ---
 
 **Made with 🤖 and ☕ for the command line.**
+
+---
+
+## 🧪 Testing
+
+The project includes comprehensive unit tests for all core functionality.
+
+### Running Tests
+
+```bash
+# Run all tests
+make test
+
+# Run tests with verbose output
+go test ./... -v
+
+# Run tests with coverage
+go test ./... -cover
+```
+
+### Test Coverage
+
+- **Config**: Environment variable loading, type conversions, defaults
+- **Formatter**: Command formatting with/without explanations, warnings
+- **Parser**: Text response parsing, markdown cleaning, command extraction
+
+---
+
+## 🔧 Advanced Features
+
+### Automatic Fallback
+
+vibe automatically tries structured JSON output first and falls back to text parsing if the model doesn't support it. No configuration needed!
+
+### Retry Logic
+
+Transient errors (timeouts, rate limits, server errors) are automatically retried with exponential backoff:
+- Retry 1: after 1 second
+- Retry 2: after 2 seconds  
+- Retry 3: after 4 seconds
+
+### Error Handling
+
+User-friendly error messages for common issues:
+- `unauthorized` - Check your API key
+- `rate limit exceeded` - Wait before retrying
+- `bad request` - Check your configuration
+- `timeout` - Increase VIBE_TIMEOUT
+- `server error` - API provider issue, will retry
+
