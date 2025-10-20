@@ -1,0 +1,50 @@
+baseURL = 'https://vibe-zsh.dev/'
+languageCode = 'en-us'
+title = 'vibe 🌊'
+theme = 'hextra'
+
+[params]
+  description = "Transform natural language into shell commands using AI"
+  
+[params.navbar]
+  displayTitle = true
+  displayLogo = false
+
+[[params.navbar.menu]]
+  name = "Documentation"
+  pageRef = "/docs"
+  weight = 1
+
+[[params.navbar.menu]]
+  name = "GitHub"
+  url = "https://github.com/skymoore/vibe-zsh"
+  weight = 2
+
+[params.page]
+  width = "wide"
+  
+[params.theme]
+  default = "auto"
+  displayToggle = true
+  
+[params.footer]
+  displayCopyright = true
+  displayPoweredBy = false
+
+[menu]
+[[menu.main]]
+  name = "Documentation"
+  pageRef = "/docs"
+  weight = 1
+
+[[menu.main]]
+  name = "GitHub"
+  url = "https://github.com/skymoore/vibe-zsh"
+  weight = 2
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    noClasses = false
