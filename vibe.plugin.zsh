@@ -12,6 +12,17 @@ function vibe() {
   local exit_code=$?
   
   if [[ $exit_code -eq 0 && -n "$cmd" ]]; then
+    if [[ "$VIBE_INTERACTIVE" == "true" ]]; then
+      echo "\n---"
+      echo "$cmd"
+      echo "---"
+      read "confirm?Execute this command? [Y/n] "
+      if [[ "$confirm" =~ ^[Nn] ]]; then
+        zle -M "Command cancelled"
+        return
+      fi
+    fi
+    
     BUFFER=""
     cursor=0
     zle reset-prompt
@@ -24,3 +35,7 @@ function vibe() {
 zle -N vibe
 
 bindkey '^G' vibe
+
+fpath+="${VIBE_PLUGIN_DIR}"
+autoload -Uz compinit
+compinit

@@ -15,6 +15,11 @@ type Config struct {
 	Timeout             time.Duration
 	UseStructuredOutput bool
 	ShowExplanation     bool
+	EnableCache         bool
+	CacheDir            string
+	CacheTTL            time.Duration
+	InteractiveMode     bool
+	ShowWarnings        bool
 }
 
 func Load() *Config {
@@ -27,6 +32,11 @@ func Load() *Config {
 		Timeout:             getEnvDuration("VIBE_TIMEOUT", 30*time.Second),
 		UseStructuredOutput: getEnvBool("VIBE_USE_STRUCTURED_OUTPUT", true),
 		ShowExplanation:     getEnvBool("VIBE_SHOW_EXPLANATION", true),
+		EnableCache:         getEnvBool("VIBE_ENABLE_CACHE", true),
+		CacheDir:            getEnv("VIBE_CACHE_DIR", ""),
+		CacheTTL:            getEnvDuration("VIBE_CACHE_TTL", 24*time.Hour),
+		InteractiveMode:     getEnvBool("VIBE_INTERACTIVE", false),
+		ShowWarnings:        getEnvBool("VIBE_SHOW_WARNINGS", true),
 	}
 }
 

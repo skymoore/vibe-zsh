@@ -31,6 +31,6 @@ func Execute() {
 		os.Exit(1)
 	}
 
-	output := formatter.Format(resp, cfg.ShowExplanation)
+	output := formatter.Format(resp, cfg.ShowExplanation, cfg.ShowWarnings)
 	fmt.Print(output)
 }

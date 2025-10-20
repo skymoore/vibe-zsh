@@ -1,9 +1,11 @@
 package schema
 
 type CommandResponse struct {
-	Command     string   `json:"command"`
-	Explanation []string `json:"explanation"`
-	Warning     string   `json:"warning,omitempty"`
+	Command      string   `json:"command"`
+	Explanation  []string `json:"explanation"`
+	Warning      string   `json:"warning,omitempty"`
+	Alternatives []string `json:"alternatives,omitempty"`
+	SafetyLevel  string   `json:"safety_level,omitempty"`
 }
 
 func GetJSONSchema() map[string]interface{} {
@@ -24,6 +26,17 @@ func GetJSONSchema() map[string]interface{} {
 			"warning": map[string]interface{}{
 				"type":        "string",
 				"description": "Optional warning message if the command is potentially dangerous",
+			},
+			"alternatives": map[string]interface{}{
+				"type": "array",
+				"items": map[string]interface{}{
+					"type": "string",
+				},
+				"description": "Optional alternative commands that accomplish the same goal",
+			},
+			"safety_level": map[string]interface{}{
+				"type":        "string",
+				"description": "Safety level: safe, caution, or dangerous",
 			},
 		},
 		"required":             []string{"command", "explanation"},

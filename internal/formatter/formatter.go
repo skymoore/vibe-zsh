@@ -6,7 +6,7 @@ import (
 	"github.com/skymoore/vibe-zsh/internal/schema"
 )
 
-func Format(resp *schema.CommandResponse, showExplanation bool) string {
+func Format(resp *schema.CommandResponse, showExplanation bool, showWarnings bool) string {
 	var buf strings.Builder
 
 	buf.WriteString(resp.Command)
@@ -20,7 +20,7 @@ func Format(resp *schema.CommandResponse, showExplanation bool) string {
 			buf.WriteString("\n")
 		}
 
-		if resp.Warning != "" {
+		if showWarnings && resp.Warning != "" {
 			buf.WriteString("# WARNING: ")
 			buf.WriteString(resp.Warning)
 			buf.WriteString("\n")

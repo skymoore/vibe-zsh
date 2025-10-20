@@ -16,6 +16,7 @@ install: build
 	mkdir -p $(INSTALL_PATH)
 	cp $(BINARY_NAME) $(INSTALL_PATH)/
 	cp vibe.plugin.zsh $(INSTALL_PATH)/
+	cp _vibe $(INSTALL_PATH)/
 	@echo "Installed to $(INSTALL_PATH)"
 	@echo "Add 'vibe' to your plugins list in ~/.zshrc and reload your shell"
 

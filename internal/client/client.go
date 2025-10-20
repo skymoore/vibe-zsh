@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/skymoore/vibe-zsh/internal/cache"
 	"github.com/skymoore/vibe-zsh/internal/config"
 	vibeErrors "github.com/skymoore/vibe-zsh/internal/errors"
 	"github.com/skymoore/vibe-zsh/internal/parser"
@@ -15,6 +16,7 @@ import (
 type Client struct {
 	config     *config.Config
 	httpClient *http.Client
+	cache      *cache.Cache
 }
 
 type Message struct {
@@ -64,23 +66,49 @@ type Usage struct {
 }
 
 func New(cfg *config.Config) *Client {
-	return &Client{
+	client := &Client{
 		config: cfg,
 		httpClient: &http.Client{
 			Timeout: cfg.Timeout,
 		},
 	}
+
+	if cfg.EnableCache {
+		c, err := cache.New(cfg.CacheDir, cfg.CacheTTL)
+		if err == nil {
+			client.cache = c
+		}
+	}
+
+	return client
 }
 
 func (c *Client) GenerateCommand(ctx context.Context, query string) (*schema.CommandResponse, error) {
+	if c.cache != nil {
+		if cached, ok := c.cache.Get(query); ok {
+			return cached, nil
+		}
+	}
+
+	var resp *schema.CommandResponse
+	var err error
+
 	if c.config.UseStructuredOutput {
-		resp, err := c.generateWithStructuredOutput(ctx, query)
+		resp, err = c.generateWithStructuredOutput(ctx, query)
 		if err == nil {
+			if c.cache != nil {
+				c.cache.Set(query, resp)
+			}
 			return resp, nil
 		}
 	}
 
-	return c.generateWithTextParsing(ctx, query)
+	resp, err = c.generateWithTextParsing(ctx, query)
+	if err == nil && c.cache != nil {
+		c.cache.Set(query, resp)
+	}
+
+	return resp, err
 }
 
 func (c *Client) generateWithStructuredOutput(ctx context.Context, query string) (*schema.CommandResponse, error) {
