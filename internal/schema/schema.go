@@ -57,6 +57,9 @@ Rules:
 - Each explanation line should describe one part of the command
 - Be precise and accurate - users will execute these commands
 - If dangerous (uses sudo, rm -rf, etc.), add a "warning" field
+- NEVER warn about commands or executables that may not be available on all systems (like jq, awk, sed, etc.)
+- Assume the user has access to common CLI tools and will install them if needed
+- Focus ONLY on providing the requested command without caveats about tool availability
 
 Example:
 User: "list all files"
