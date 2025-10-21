@@ -4,6 +4,7 @@ before:
   hooks:
     - go mod tidy
     - go test ./...
+    - go run main.go completion zsh > _vibe
 
 builds:
   - id: vibe
@@ -55,16 +56,21 @@ homebrew_casks:
     dependencies:
       - formula: zsh
     caveats: |-
-      vibe requires Oh My Zsh for Ctrl+G functionality.
+      vibe has been installed successfully!
 
-      If Oh My Zsh is installed, vibe has been automatically configured.
-      Please run: source ~/.zshrc
+      For ZSH Plugin (Ctrl+G):
+        If Oh My Zsh is installed, vibe has been automatically configured.
+        Please run: source ~/.zshrc
 
-      If Oh My Zsh is not installed, install it first:
-        sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"
+        If Oh My Zsh is not installed, install it first:
+          sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"
 
-      Then add 'vibe' to your plugins in ~/.zshrc:
-        plugins=(... vibe)
+        Then add 'vibe' to your plugins in ~/.zshrc:
+          plugins=(... vibe)
+
+      For Direct CLI Usage:
+        The executable is available as: vibe-zsh
+        Example: vibe-zsh "list all docker containers"
 
       Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
         export VIBE_API_URL=\"http://localhost:11434/v1\"
@@ -110,6 +116,17 @@ homebrew_casks:
               FileUtils.cp(src, dst)
               FileUtils.chmod(0755, dst) if file == "vibe"
             end
+          end
+
+          homebrew_bin = "/opt/homebrew/bin"
+          vibe_zsh_symlink = File.join(homebrew_bin, "vibe-zsh")
+          vibe_binary_in_plugin = File.join(vibe_plugin_dir, "vibe")
+          
+          if File.exist?(vibe_binary_in_plugin) && Dir.exist?(homebrew_bin)
+            FileUtils.rm(vibe_zsh_symlink) if File.exist?(vibe_zsh_symlink) || File.symlink?(vibe_zsh_symlink)
+            FileUtils.ln_s(vibe_binary_in_plugin, vibe_zsh_symlink)
+            puts "✓ Created global symlink: /opt/homebrew/bin/vibe-zsh -> #{vibe_binary_in_plugin}"
+            puts "✓ You can now use 'vibe-zsh' command globally"
           end
 
           zshrc_content = File.read(zshrc_path) rescue ""

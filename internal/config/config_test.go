@@ -53,7 +53,19 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Model != "llama3:8b" {
 		t.Errorf("Default Model = %v, want llama3:8b", cfg.Model)
 	}
+	if cfg.Temperature != 0.2 {
+		t.Errorf("Default Temperature = %v, want 0.2", cfg.Temperature)
+	}
 	if cfg.ShowExplanation != true {
 		t.Errorf("Default ShowExplanation = %v, want true", cfg.ShowExplanation)
+	}
+	if cfg.MaxRetries != 3 {
+		t.Errorf("Default MaxRetries = %v, want 3", cfg.MaxRetries)
+	}
+	if cfg.EnableJSONExtraction != true {
+		t.Errorf("Default EnableJSONExtraction = %v, want true", cfg.EnableJSONExtraction)
+	}
+	if cfg.StrictValidation != true {
+		t.Errorf("Default StrictValidation = %v, want true", cfg.StrictValidation)
 	}
 }

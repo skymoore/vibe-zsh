@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1316&amp;path=livereload" data-no-instant defer></script>
+<html lang="en" dir="ltr"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1315&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="robots" content="noindex, nofollow" />
   <link rel="icon shortcut" href="/favicon.ico" sizes="32x32" />
@@ -10,7 +10,7 @@
 <link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
 <title>Configuration – vibe 🌊</title>
   <meta name="description" content="All configuration is done through environment variables in your ~/.zshrc. All settings are optional and have sensible defaults.
-Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;http://localhost:11434/v1&#34; export VIBE_MODEL=&#34;llama3:8b&#34; This is the default configuration. If you have Ollama running locally, vibe will work out of the box." /><link rel="canonical" href="http://localhost:1316/docs/configuration/" itemprop="url" />
+Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;http://localhost:11434/v1&#34; export VIBE_MODEL=&#34;llama3:8b&#34; This is the default configuration. If you have Ollama running locally, vibe will work out of the box." /><link rel="canonical" href="http://localhost:1315/docs/configuration/" itemprop="url" />
 
 <meta property="og:title" content="Configuration">
 <meta
@@ -38,7 +38,7 @@ This is the default configuration. If you have Ollama running locally, vibe will
   content="
     article
   ">
-<meta property="og:url" content="http://localhost:1316/docs/configuration/"><meta property="article:section" content="docs">
+<meta property="og:url" content="http://localhost:1315/docs/configuration/"><meta property="article:section" content="docs">
 
 
 
@@ -46,7 +46,7 @@ This is the default configuration. If you have Ollama running locally, vibe will
   <meta itemprop="name" content="Configuration">
   <meta itemprop="description" content="All configuration is done through environment variables in your ~/.zshrc. All settings are optional and have sensible defaults.
 Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;http://localhost:11434/v1&#34; export VIBE_MODEL=&#34;llama3:8b&#34; This is the default configuration. If you have Ollama running locally, vibe will work out of the box.">
-  <meta itemprop="wordCount" content="284">
+  <meta itemprop="wordCount" content="425">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Configuration">
   <meta name="twitter:description" content="All configuration is done through environment variables in your ~/.zshrc. All settings are optional and have sensible defaults.
@@ -160,6 +160,12 @@ Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;htt
                 href="#performance-configuration"
                 class="hx:flex hx:rounded-sm hx:px-2 hx:py-1.5 hx:text-sm hx:transition-colors [word-break:break-word] hx:cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] hx:contrast-more:border hx:gap-2 hx:before:opacity-25 hx:before:content-['#'] hx:text-gray-500 hx:hover:bg-gray-100 hx:hover:text-gray-900 hx:dark:text-neutral-400 hx:dark:hover:bg-primary-100/5 hx:dark:hover:text-gray-50 hx:contrast-more:text-gray-900 hx:contrast-more:dark:text-gray-50 hx:contrast-more:border-transparent hx:contrast-more:hover:border-gray-900 hx:contrast-more:dark:hover:border-gray-50"
               >Performance Configuration</a>
+            </li>
+          <li>
+              <a
+                href="#advanced-configuration"
+                class="hx:flex hx:rounded-sm hx:px-2 hx:py-1.5 hx:text-sm hx:transition-colors [word-break:break-word] hx:cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] hx:contrast-more:border hx:gap-2 hx:before:opacity-25 hx:before:content-['#'] hx:text-gray-500 hx:hover:bg-gray-100 hx:hover:text-gray-900 hx:dark:text-neutral-400 hx:dark:hover:bg-primary-100/5 hx:dark:hover:text-gray-50 hx:contrast-more:text-gray-900 hx:contrast-more:dark:text-gray-50 hx:contrast-more:border-transparent hx:contrast-more:hover:border-gray-900 hx:contrast-more:dark:hover:border-gray-50"
+              >Advanced Configuration</a>
             </li>
           <li>
               <a
@@ -362,6 +368,18 @@ Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;htt
       </li>
       <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
         <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#api-settings">API Settings
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:font-medium hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#advanced-configuration">Advanced Configuration
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#parsing--reliability">Parsing &amp; Reliability
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#debug--troubleshooting">Debug &amp; Troubleshooting
         </a>
       </li>
       <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
@@ -584,6 +602,56 @@ Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;htt
   </button>
 </div>
 </div>
+<h2>Advanced Configuration<span class="hx:absolute hx:-mt-20" id="advanced-configuration"></span>
+    <a href="#advanced-configuration" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><h3>Parsing &amp; Reliability<span class="hx:absolute hx:-mt-20" id="parsing--reliability"></span>
+    <a href="#parsing--reliability" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Control how vibe handles LLM responses (defaults are recommended):</p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Max retry attempts for failed parsing (default: 3)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MAX_RETRIES</span><span class="o">=</span><span class="m">5</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Extract JSON from corrupted responses (default: true)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_ENABLE_JSON_EXTRACTION</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Validate response structure (default: true)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_STRICT_VALIDATION</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Use JSON schema for structured responses (default: true)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_USE_STRUCTURED_OUTPUT</span><span class="o">=</span>true</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<h3>Debug &amp; Troubleshooting<span class="hx:absolute hx:-mt-20" id="debug--troubleshooting"></span>
+    <a href="#debug--troubleshooting" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>Enable detailed logging for debugging parsing issues:</p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Enable debug logging (default: false)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_DEBUG_LOGS</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Show retry progress during generation (default: true)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_SHOW_RETRY_STATUS</span><span class="o">=</span>true</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<p>When <code>VIBE_DEBUG_LOGS=true</code>, vibe will log:</p>
+<ul>
+<li>Raw LLM responses</li>
+<li>Parsing attempts and failures</li>
+<li>Which fallback layer succeeded</li>
+<li>Extracted/cleaned JSON content</li>
+</ul>
 <h2>Configuration Reference<span class="hx:absolute hx:-mt-20" id="configuration-reference"></span>
     <a href="#configuration-reference" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><table>
   <thead>
@@ -611,7 +679,7 @@ Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;htt
       </tr>
       <tr>
           <td><code>VIBE_TEMPERATURE</code></td>
-          <td><code>0.7</code></td>
+          <td><code>0.2</code></td>
           <td>Generation temperature</td>
       </tr>
       <tr>
@@ -623,6 +691,11 @@ Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;htt
           <td><code>VIBE_TIMEOUT</code></td>
           <td><code>30s</code></td>
           <td>Request timeout</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_USE_STRUCTURED_OUTPUT</code></td>
+          <td><code>true</code></td>
+          <td>Use JSON schema for structured responses</td>
       </tr>
       <tr>
           <td><code>VIBE_SHOW_EXPLANATION</code></td>
@@ -649,6 +722,31 @@ Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;htt
           <td><code>false</code></td>
           <td>Confirm before inserting</td>
       </tr>
+      <tr>
+          <td><code>VIBE_MAX_RETRIES</code></td>
+          <td><code>3</code></td>
+          <td>Max retry attempts for failed parsing</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_ENABLE_JSON_EXTRACTION</code></td>
+          <td><code>true</code></td>
+          <td>Extract JSON from corrupted responses</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_STRICT_VALIDATION</code></td>
+          <td><code>true</code></td>
+          <td>Validate response structure</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_DEBUG_LOGS</code></td>
+          <td><code>false</code></td>
+          <td>Enable debug logging</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_SHOW_RETRY_STATUS</code></td>
+          <td><code>true</code></td>
+          <td>Show retry progress during generation</td>
+      </tr>
   </tbody>
 </table>
 <h2>Example Configuration<span class="hx:absolute hx:-mt-20" id="example-configuration"></span>
@@ -659,7 +757,7 @@ Provider Configuration Local LLM (Ollama) - Default export VIBE_API_URL=&#34;htt
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_API_URL</span><span class="o">=</span><span class="s2">&#34;https://api.openai.com/v1&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_API_KEY</span><span class="o">=</span><span class="s2">&#34;sk-...&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MODEL</span><span class="o">=</span><span class="s2">&#34;gpt-4&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.5
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.2
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_SHOW_EXPLANATION</span><span class="o">=</span><span class="nb">true</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_INTERACTIVE</span><span class="o">=</span><span class="nb">false</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_ENABLE_CACHE</span><span class="o">=</span><span class="nb">true</span>

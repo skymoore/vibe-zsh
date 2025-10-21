@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1316&amp;path=livereload" data-no-instant defer></script>
+<html lang="en" dir="ltr"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1315&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="robots" content="noindex, nofollow" />
   <link rel="icon shortcut" href="/favicon.ico" sizes="32x32" />
@@ -17,7 +17,7 @@ Description: The base URL for the OpenAI-compatible API endpoint.
 Examples:
 # Ollama (local) export VIBE_API_URL=&#34;http://localhost:11434/v1&#34; # OpenAI export VIBE_API_URL=&#34;https://api.openai.com/v1&#34; # Anthropic via OpenRouter export VIBE_API_URL=&#34;https://openrouter.ai/api/v1&#34; # LM Studio export VIBE_API_URL=&#34;http://localhost:1234/v1&#34; # Groq export VIBE_API_URL=&#34;https://api.groq.com/openai/v1&#34; VIBE_API_KEY Type: String
 Default: &#34;&#34; (empty, not required for Ollama)
-Description: API key for authentication. Required for most cloud providers." /><link rel="canonical" href="http://localhost:1316/docs/reference/" itemprop="url" />
+Description: API key for authentication. Required for most cloud providers." /><link rel="canonical" href="http://localhost:1315/docs/reference/" itemprop="url" />
 
 <meta property="og:title" content="Configuration Reference">
 <meta
@@ -67,7 +67,7 @@ Description: API key for authentication. Required for most cloud providers.
   content="
     article
   ">
-<meta property="og:url" content="http://localhost:1316/docs/reference/"><meta property="article:section" content="docs">
+<meta property="og:url" content="http://localhost:1315/docs/reference/"><meta property="article:section" content="docs">
 
 
 
@@ -82,7 +82,7 @@ Examples:
 # Ollama (local) export VIBE_API_URL=&#34;http://localhost:11434/v1&#34; # OpenAI export VIBE_API_URL=&#34;https://api.openai.com/v1&#34; # Anthropic via OpenRouter export VIBE_API_URL=&#34;https://openrouter.ai/api/v1&#34; # LM Studio export VIBE_API_URL=&#34;http://localhost:1234/v1&#34; # Groq export VIBE_API_URL=&#34;https://api.groq.com/openai/v1&#34; VIBE_API_KEY Type: String
 Default: &#34;&#34; (empty, not required for Ollama)
 Description: API key for authentication. Required for most cloud providers.">
-  <meta itemprop="wordCount" content="834">
+  <meta itemprop="wordCount" content="1341">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Configuration Reference">
   <meta name="twitter:description" content="Complete reference for all vibe configuration options.
@@ -420,6 +420,34 @@ Description: API key for authentication. Required for most cloud providers.">
         </a>
       </li>
       <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#parsing--reliability-configuration">Parsing &amp; Reliability Configuration
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-8 hx:rtl:pr-8 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#vibe_use_structured_output">VIBE_USE_STRUCTURED_OUTPUT
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-8 hx:rtl:pr-8 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#vibe_max_retries">VIBE_MAX_RETRIES
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-8 hx:rtl:pr-8 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#vibe_enable_json_extraction">VIBE_ENABLE_JSON_EXTRACTION
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-8 hx:rtl:pr-8 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#vibe_strict_validation">VIBE_STRICT_VALIDATION
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-8 hx:rtl:pr-8 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#vibe_debug_logs">VIBE_DEBUG_LOGS
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-8 hx:rtl:pr-8 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#vibe_show_retry_status">VIBE_SHOW_RETRY_STATUS
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
         <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#cache-configuration">Cache Configuration
         </a>
       </li>
@@ -456,6 +484,10 @@ Description: API key for authentication. Required for most cloud providers.">
         </a>
       </li>
       <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#debugging-configuration">Debugging Configuration
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
         <a class="hx:font-medium hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#plugin-configuration">Plugin Configuration
         </a>
       </li>
@@ -469,6 +501,26 @@ Description: API key for authentication. Required for most cloud providers.">
       </li>
       <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
         <a class="hx:font-medium hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#quick-reference-table">Quick Reference Table
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#core-settings">Core Settings
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#parsing--reliability">Parsing &amp; Reliability
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#display--behavior">Display &amp; Behavior
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#cache-settings">Cache Settings
+        </a>
+      </li>
+      <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
+        <a class="hx:ltr:pl-4 hx:rtl:pr-4 hx:inline-block hx:text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-300 hx:contrast-more:text-gray-900 hx:contrast-more:underline hx:contrast-more:dark:text-gray-50 hx:w-full hx:break-words" href="#system">System
         </a>
       </li>
       <li class="hx:my-2 hx:scroll-my-6 hx:scroll-py-6">
@@ -614,20 +666,20 @@ Description: API key for authentication. Required for most cloud providers.">
 <hr>
 <h4>VIBE_TEMPERATURE<span class="hx:absolute hx:-mt-20" id="vibe_temperature"></span>
     <a href="#vibe_temperature" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p><strong>Type:</strong> Float<br>
-<strong>Default:</strong> <code>0.7</code><br>
+<strong>Default:</strong> <code>0.2</code><br>
 <strong>Range:</strong> <code>0.0</code> to <code>2.0</code><br>
 <strong>Description:</strong> Controls randomness in the model&rsquo;s output. Lower values make output more deterministic, higher values more creative.</p>
 <p><strong>Examples:</strong></p>
 <div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
 
-<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># More deterministic (recommended for commands)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.3
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1"># Balanced (default)</span>
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.7
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Most deterministic (default, recommended for commands)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.2
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># More creative</span>
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>1.0</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.5
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Higher variation</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.7</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
   <button
     class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
     title="Copy code"
@@ -639,7 +691,7 @@ Description: API key for authentication. Required for most cloud providers.">
 </div>
 <p><strong>Recommendations:</strong></p>
 <ul>
-<li><code>0.0-0.3</code>: Most consistent, predictable commands</li>
+<li><code>0.0-0.3</code>: Most consistent, predictable commands (recommended)</li>
 <li><code>0.4-0.7</code>: Balanced creativity and consistency</li>
 <li><code>0.8-2.0</code>: More variation (may produce unexpected results)</li>
 </ul>
@@ -823,6 +875,208 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
 </div>
 </div>
 <hr>
+<h3>Parsing &amp; Reliability Configuration<span class="hx:absolute hx:-mt-20" id="parsing--reliability-configuration"></span>
+    <a href="#parsing--reliability-configuration" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><h4>VIBE_USE_STRUCTURED_OUTPUT<span class="hx:absolute hx:-mt-20" id="vibe_use_structured_output"></span>
+    <a href="#vibe_use_structured_output" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p><strong>Type:</strong> Boolean<br>
+<strong>Default:</strong> <code>true</code><br>
+<strong>Description:</strong> Use JSON schema for structured responses. Provides better reliability with models that support structured output.</p>
+<p><strong>Examples:</strong></p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Use structured output (default, recommended)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_USE_STRUCTURED_OUTPUT</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Disable structured output (fallback to text parsing)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_USE_STRUCTURED_OUTPUT</span><span class="o">=</span>false</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<p><strong>Recommendations:</strong></p>
+<ul>
+<li>Keep enabled for OpenAI, Claude, and modern models</li>
+<li>Disable if your model doesn&rsquo;t support JSON schema</li>
+</ul>
+<hr>
+<h4>VIBE_MAX_RETRIES<span class="hx:absolute hx:-mt-20" id="vibe_max_retries"></span>
+    <a href="#vibe_max_retries" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p><strong>Type:</strong> Integer<br>
+<strong>Default:</strong> <code>3</code><br>
+<strong>Description:</strong> Maximum retry attempts for failed parsing. Higher values increase reliability but may slow down error cases.</p>
+<p><strong>Examples:</strong></p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Conservative (faster failures)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MAX_RETRIES</span><span class="o">=</span><span class="m">2</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Default (recommended)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MAX_RETRIES</span><span class="o">=</span><span class="m">3</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Aggressive (maximum reliability)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MAX_RETRIES</span><span class="o">=</span><span class="m">5</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<p><strong>When to adjust:</strong></p>
+<ul>
+<li>Increase if you see occasional parsing failures</li>
+<li>Decrease if you want faster error responses</li>
+</ul>
+<hr>
+<h4>VIBE_ENABLE_JSON_EXTRACTION<span class="hx:absolute hx:-mt-20" id="vibe_enable_json_extraction"></span>
+    <a href="#vibe_enable_json_extraction" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p><strong>Type:</strong> Boolean<br>
+<strong>Default:</strong> <code>true</code><br>
+<strong>Description:</strong> Automatically extract valid JSON from corrupted LLM responses containing garbage characters, escape sequences, or Unicode pollution.</p>
+<p><strong>Examples:</strong></p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Enable JSON extraction (default, recommended)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_ENABLE_JSON_EXTRACTION</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Disable extraction (strict parsing only)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_ENABLE_JSON_EXTRACTION</span><span class="o">=</span>false</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<p><strong>What it handles:</strong></p>
+<ul>
+<li>Terminal escape sequences (<code>\x1b[200~</code>, <code>\x1b[201~</code>)</li>
+<li>Unicode separators (<code>\u2028</code>, <code>\u2029</code>)</li>
+<li>Control characters and garbage text</li>
+<li>JSON buried in explanatory text</li>
+</ul>
+<hr>
+<h4>VIBE_STRICT_VALIDATION<span class="hx:absolute hx:-mt-20" id="vibe_strict_validation"></span>
+    <a href="#vibe_strict_validation" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p><strong>Type:</strong> Boolean<br>
+<strong>Default:</strong> <code>true</code><br>
+<strong>Description:</strong> Validate response structure for required fields and proper formatting.</p>
+<p><strong>Examples:</strong></p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Enable validation (default, recommended)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_STRICT_VALIDATION</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Disable validation (permissive)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_STRICT_VALIDATION</span><span class="o">=</span>false</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<p><strong>What it checks:</strong></p>
+<ul>
+<li>Command field is non-empty</li>
+<li>Explanation array has entries</li>
+<li>No whitespace-only fields</li>
+</ul>
+<p><strong>When to disable:</strong></p>
+<ul>
+<li>Debugging parsing issues</li>
+<li>Testing with experimental models</li>
+</ul>
+<hr>
+<h4>VIBE_DEBUG_LOGS<span class="hx:absolute hx:-mt-20" id="vibe_debug_logs"></span>
+    <a href="#vibe_debug_logs" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p><strong>Type:</strong> Boolean<br>
+<strong>Default:</strong> <code>false</code><br>
+<strong>Description:</strong> Enable detailed debug logging for troubleshooting parsing and API issues.</p>
+<p><strong>Examples:</strong></p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Disable debug logs (default)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_DEBUG_LOGS</span><span class="o">=</span><span class="nb">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Enable debug logs</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_DEBUG_LOGS</span><span class="o">=</span>true</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<p><strong>What it logs:</strong></p>
+<ul>
+<li>Raw LLM responses (first 500 chars)</li>
+<li>Parsing attempts and failures</li>
+<li>Which fallback layer succeeded</li>
+<li>JSON extraction details</li>
+<li>Garbage removed from responses</li>
+</ul>
+<p><strong>Output example:</strong></p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><pre><code>[VIBE] [ATTEMPT 1][structured_output] Parsing failed: invalid JSON
+[VIBE] [ATTEMPT 2][enhanced_parsing] Parsing failed: ...
+[VIBE] [JSON_EXTRACT] Success
+Trimmed prefix: &#34;AWS\x1b[200~...&#34;
+[VIBE] [SUCCESS] Layer &#39;enhanced_parsing&#39; succeeded on attempt 2</code></pre></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<hr>
+<h4>VIBE_SHOW_RETRY_STATUS<span class="hx:absolute hx:-mt-20" id="vibe_show_retry_status"></span>
+    <a href="#vibe_show_retry_status" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p><strong>Type:</strong> Boolean<br>
+<strong>Default:</strong> <code>true</code><br>
+<strong>Description:</strong> Show progress indicator during retry attempts.</p>
+<p><strong>Examples:</strong></p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Show retry status (default)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_SHOW_RETRY_STATUS</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Hide retry status</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_SHOW_RETRY_STATUS</span><span class="o">=</span>false</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<p><strong>When enabled:</strong></p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><pre><code>⏳ Generating command (attempt 2/3)...</code></pre></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<hr>
 <h3>Cache Configuration<span class="hx:absolute hx:-mt-20" id="cache-configuration"></span>
     <a href="#cache-configuration" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><h4>VIBE_ENABLE_CACHE<span class="hx:absolute hx:-mt-20" id="vibe_enable_cache"></span>
     <a href="#vibe_enable_cache" class="subheading-anchor" aria-label="Permalink for this section"></a></h4><p><strong>Type:</strong> Boolean<br>
@@ -903,7 +1157,7 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_API_URL</span><span class="o">=</span><span class="s2">&#34;https://api.openai.com/v1&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_API_KEY</span><span class="o">=</span><span class="s2">&#34;sk-...&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MODEL</span><span class="o">=</span><span class="s2">&#34;gpt-4&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.5
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.2
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TIMEOUT</span><span class="o">=</span>30s</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
   <button
     class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
@@ -920,7 +1174,7 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
 <div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_API_URL</span><span class="o">=</span><span class="s2">&#34;https://openrouter.ai/api/v1&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_API_KEY</span><span class="o">=</span><span class="s2">&#34;sk-or-...&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MODEL</span><span class="o">=</span><span class="s2">&#34;anthropic/claude-3.5-sonnet&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.7
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.2
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MAX_TOKENS</span><span class="o">=</span><span class="m">500</span></span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
   <button
     class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
@@ -954,9 +1208,17 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_API_URL</span><span class="o">=</span><span class="s2">&#34;https://api.openai.com/v1&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_API_KEY</span><span class="o">=</span><span class="s2">&#34;sk-...&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MODEL</span><span class="o">=</span><span class="s2">&#34;gpt-4&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.5
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TEMPERATURE</span><span class="o">=</span>0.2
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MAX_TOKENS</span><span class="o">=</span><span class="m">500</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_TIMEOUT</span><span class="o">=</span>30s
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Parsing &amp; Reliability (defaults shown, usually don&#39;t need to change)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_USE_STRUCTURED_OUTPUT</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MAX_RETRIES</span><span class="o">=</span><span class="m">3</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_ENABLE_JSON_EXTRACTION</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_STRICT_VALIDATION</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_DEBUG_LOGS</span><span class="o">=</span><span class="nb">false</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_SHOW_RETRY_STATUS</span><span class="o">=</span><span class="nb">true</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Display Configuration</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_SHOW_EXPLANATION</span><span class="o">=</span><span class="nb">true</span>
@@ -968,6 +1230,29 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
 </span></span><span class="line"><span class="cl"><span class="c1"># Cache Configuration</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_ENABLE_CACHE</span><span class="o">=</span><span class="nb">true</span>
 </span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_CACHE_TTL</span><span class="o">=</span>24h</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
+  <button
+    class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
+    title="Copy code"
+  >
+    <div class="hextra-copy-icon hx:group-[.copied]/copybtn:hidden hx:pointer-events-none hx:h-4 hx:w-4"></div>
+<div class="hextra-success-icon hx:hidden hx:group-[.copied]/copybtn:block hx:pointer-events-none hx:h-4 hx:w-4"></div>
+  </button>
+</div>
+</div>
+<h3>Debugging Configuration<span class="hx:absolute hx:-mt-20" id="debugging-configuration"></span>
+    <a href="#debugging-configuration" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>When troubleshooting issues, use this minimal debug config:</p>
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+
+<div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Enable debug logging</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_DEBUG_LOGS</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Increase retries to see all fallback attempts</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_MAX_RETRIES</span><span class="o">=</span><span class="m">5</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Keep other settings at defaults</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_ENABLE_JSON_EXTRACTION</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_STRICT_VALIDATION</span><span class="o">=</span><span class="nb">true</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">VIBE_SHOW_RETRY_STATUS</span><span class="o">=</span>true</span></span></code></pre></div></div><div class="hextra-code-copy-btn-container hx:opacity-0 hx:transition hx:group-hover/code:opacity-100 hx:flex hx:gap-1 hx:absolute hx:m-[11px] hx:right-0 hx:top-0">
   <button
     class="hextra-code-copy-btn hx:group/copybtn hx:cursor-pointer hx:transition-all hx:active:opacity-50 hx:bg-primary-700/5 hx:border hx:border-black/5 hx:text-gray-600 hx:hover:text-gray-900 hx:rounded-md hx:p-1.5 hx:dark:bg-primary-300/10 hx:dark:border-white/10 hx:dark:text-gray-400 hx:dark:hover:text-gray-50"
     title="Copy code"
@@ -1016,7 +1301,8 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
 </div>
 <hr>
 <h2>Quick Reference Table<span class="hx:absolute hx:-mt-20" id="quick-reference-table"></span>
-    <a href="#quick-reference-table" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><table>
+    <a href="#quick-reference-table" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><h3>Core Settings<span class="hx:absolute hx:-mt-20" id="core-settings"></span>
+    <a href="#core-settings" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><table>
   <thead>
       <tr>
           <th>Variable</th>
@@ -1047,7 +1333,7 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
       <tr>
           <td><code>VIBE_TEMPERATURE</code></td>
           <td>Float</td>
-          <td><code>0.7</code></td>
+          <td><code>0.2</code></td>
           <td>Randomness (0.0-2.0)</td>
       </tr>
       <tr>
@@ -1062,6 +1348,68 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
           <td><code>30s</code></td>
           <td>Request timeout</td>
       </tr>
+  </tbody>
+</table>
+<h3>Parsing &amp; Reliability<span class="hx:absolute hx:-mt-20" id="parsing--reliability"></span>
+    <a href="#parsing--reliability" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><table>
+  <thead>
+      <tr>
+          <th>Variable</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>VIBE_USE_STRUCTURED_OUTPUT</code></td>
+          <td>Boolean</td>
+          <td><code>true</code></td>
+          <td>Use JSON schema for responses</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_MAX_RETRIES</code></td>
+          <td>Integer</td>
+          <td><code>3</code></td>
+          <td>Max retry attempts</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_ENABLE_JSON_EXTRACTION</code></td>
+          <td>Boolean</td>
+          <td><code>true</code></td>
+          <td>Extract JSON from corrupted responses</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_STRICT_VALIDATION</code></td>
+          <td>Boolean</td>
+          <td><code>true</code></td>
+          <td>Validate response structure</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_DEBUG_LOGS</code></td>
+          <td>Boolean</td>
+          <td><code>false</code></td>
+          <td>Enable debug logging</td>
+      </tr>
+      <tr>
+          <td><code>VIBE_SHOW_RETRY_STATUS</code></td>
+          <td>Boolean</td>
+          <td><code>true</code></td>
+          <td>Show retry progress</td>
+      </tr>
+  </tbody>
+</table>
+<h3>Display &amp; Behavior<span class="hx:absolute hx:-mt-20" id="display--behavior"></span>
+    <a href="#display--behavior" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><table>
+  <thead>
+      <tr>
+          <th>Variable</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
       <tr>
           <td><code>VIBE_SHOW_EXPLANATION</code></td>
           <td>Boolean</td>
@@ -1080,6 +1428,19 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
           <td><code>false</code></td>
           <td>Confirm before insert</td>
       </tr>
+  </tbody>
+</table>
+<h3>Cache Settings<span class="hx:absolute hx:-mt-20" id="cache-settings"></span>
+    <a href="#cache-settings" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><table>
+  <thead>
+      <tr>
+          <th>Variable</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
       <tr>
           <td><code>VIBE_ENABLE_CACHE</code></td>
           <td>Boolean</td>
@@ -1092,6 +1453,19 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
           <td><code>24h</code></td>
           <td>Cache lifetime</td>
       </tr>
+  </tbody>
+</table>
+<h3>System<span class="hx:absolute hx:-mt-20" id="system"></span>
+    <a href="#system" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><table>
+  <thead>
+      <tr>
+          <th>Variable</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
       <tr>
           <td><code>VIBE_BINARY</code></td>
           <td>String</td>
@@ -1209,6 +1583,14 @@ Execute this command? [Y/n]</code></pre></div><div class="hextra-code-copy-btn-c
 <li>Enable cache: <code>VIBE_ENABLE_CACHE=true</code></li>
 <li>Reduce <code>VIBE_MAX_TOKENS</code></li>
 <li>Use faster model or local LLM</li>
+</ul>
+<p><strong>Parsing failures or corrupted output</strong></p>
+<ul>
+<li>Enable debug logs: <code>VIBE_DEBUG_LOGS=true</code></li>
+<li>Check logs for which layer is failing</li>
+<li>Ensure JSON extraction is enabled: <code>VIBE_ENABLE_JSON_EXTRACTION=true</code></li>
+<li>Try lowering temperature: <code>VIBE_TEMPERATURE=0.3</code></li>
+<li>Increase retries: <code>VIBE_MAX_RETRIES=5</code></li>
 </ul>
 
         </div>

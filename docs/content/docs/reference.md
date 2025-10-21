@@ -95,25 +95,25 @@ export VIBE_MODEL="mixtral-8x7b-32768"
 #### VIBE_TEMPERATURE
 
 **Type:** Float  
-**Default:** `0.7`  
+**Default:** `0.2`  
 **Range:** `0.0` to `2.0`  
 **Description:** Controls randomness in the model's output. Lower values make output more deterministic, higher values more creative.
 
 **Examples:**
 
 ```bash 
-# More deterministic (recommended for commands)
-export VIBE_TEMPERATURE=0.3
-
-# Balanced (default)
-export VIBE_TEMPERATURE=0.7
+# Most deterministic (default, recommended for commands)
+export VIBE_TEMPERATURE=0.2
 
 # More creative
-export VIBE_TEMPERATURE=1.0
+export VIBE_TEMPERATURE=0.5
+
+# Higher variation
+export VIBE_TEMPERATURE=0.7
 ```
 
 **Recommendations:**
-- `0.0-0.3`: Most consistent, predictable commands
+- `0.0-0.3`: Most consistent, predictable commands (recommended)
 - `0.4-0.7`: Balanced creativity and consistency
 - `0.8-2.0`: More variation (may produce unexpected results)
 
@@ -250,6 +250,163 @@ Execute this command? [Y/n]
 
 ---
 
+### Parsing & Reliability Configuration
+
+#### VIBE_USE_STRUCTURED_OUTPUT
+
+**Type:** Boolean  
+**Default:** `true`  
+**Description:** Use JSON schema for structured responses. Provides better reliability with models that support structured output.
+
+**Examples:**
+
+```bash 
+# Use structured output (default, recommended)
+export VIBE_USE_STRUCTURED_OUTPUT=true
+
+# Disable structured output (fallback to text parsing)
+export VIBE_USE_STRUCTURED_OUTPUT=false
+```
+
+**Recommendations:**
+- Keep enabled for OpenAI, Claude, and modern models
+- Disable if your model doesn't support JSON schema
+
+---
+
+#### VIBE_MAX_RETRIES
+
+**Type:** Integer  
+**Default:** `3`  
+**Description:** Maximum retry attempts for failed parsing. Higher values increase reliability but may slow down error cases.
+
+**Examples:**
+
+```bash 
+# Conservative (faster failures)
+export VIBE_MAX_RETRIES=2
+
+# Default (recommended)
+export VIBE_MAX_RETRIES=3
+
+# Aggressive (maximum reliability)
+export VIBE_MAX_RETRIES=5
+```
+
+**When to adjust:**
+- Increase if you see occasional parsing failures
+- Decrease if you want faster error responses
+
+---
+
+#### VIBE_ENABLE_JSON_EXTRACTION
+
+**Type:** Boolean  
+**Default:** `true`  
+**Description:** Automatically extract valid JSON from corrupted LLM responses containing garbage characters, escape sequences, or Unicode pollution.
+
+**Examples:**
+
+```bash 
+# Enable JSON extraction (default, recommended)
+export VIBE_ENABLE_JSON_EXTRACTION=true
+
+# Disable extraction (strict parsing only)
+export VIBE_ENABLE_JSON_EXTRACTION=false
+```
+
+**What it handles:**
+- Terminal escape sequences (`\x1b[200~`, `\x1b[201~`)
+- Unicode separators (`\u2028`, `\u2029`)
+- Control characters and garbage text
+- JSON buried in explanatory text
+
+---
+
+#### VIBE_STRICT_VALIDATION
+
+**Type:** Boolean  
+**Default:** `true`  
+**Description:** Validate response structure for required fields and proper formatting.
+
+**Examples:**
+
+```bash 
+# Enable validation (default, recommended)
+export VIBE_STRICT_VALIDATION=true
+
+# Disable validation (permissive)
+export VIBE_STRICT_VALIDATION=false
+```
+
+**What it checks:**
+- Command field is non-empty
+- Explanation array has entries
+- No whitespace-only fields
+
+**When to disable:**
+- Debugging parsing issues
+- Testing with experimental models
+
+---
+
+#### VIBE_DEBUG_LOGS
+
+**Type:** Boolean  
+**Default:** `false`  
+**Description:** Enable detailed debug logging for troubleshooting parsing and API issues.
+
+**Examples:**
+
+```bash 
+# Disable debug logs (default)
+export VIBE_DEBUG_LOGS=false
+
+# Enable debug logs
+export VIBE_DEBUG_LOGS=true
+```
+
+**What it logs:**
+- Raw LLM responses (first 500 chars)
+- Parsing attempts and failures
+- Which fallback layer succeeded
+- JSON extraction details
+- Garbage removed from responses
+
+**Output example:**
+```
+[VIBE] [ATTEMPT 1][structured_output] Parsing failed: invalid JSON
+[VIBE] [ATTEMPT 2][enhanced_parsing] Parsing failed: ...
+[VIBE] [JSON_EXTRACT] Success
+Trimmed prefix: "AWS\x1b[200~..."
+[VIBE] [SUCCESS] Layer 'enhanced_parsing' succeeded on attempt 2
+```
+
+---
+
+#### VIBE_SHOW_RETRY_STATUS
+
+**Type:** Boolean  
+**Default:** `true`  
+**Description:** Show progress indicator during retry attempts.
+
+**Examples:**
+
+```bash 
+# Show retry status (default)
+export VIBE_SHOW_RETRY_STATUS=true
+
+# Hide retry status
+export VIBE_SHOW_RETRY_STATUS=false
+```
+
+**When enabled:**
+```
+⏳ Generating command (attempt 2/3)...
+```
+
+---
+
 ### Cache Configuration
 
 #### VIBE_ENABLE_CACHE
@@ -318,7 +475,7 @@ export VIBE_MODEL="llama3:8b"
 export VIBE_API_URL="https://api.openai.com/v1"
 export VIBE_API_KEY="sk-..."
 export VIBE_MODEL="gpt-4"
-export VIBE_TEMPERATURE=0.5
+export VIBE_TEMPERATURE=0.2
 export VIBE_TIMEOUT=30s
 ```
 
@@ -328,7 +485,7 @@ export VIBE_TIMEOUT=30s
 export VIBE_API_URL="https://openrouter.ai/api/v1"
 export VIBE_API_KEY="sk-or-..."
 export VIBE_MODEL="anthropic/claude-3.5-sonnet"
-export VIBE_TEMPERATURE=0.7
+export VIBE_TEMPERATURE=0.2
 export VIBE_MAX_TOKENS=500
 ```
 
@@ -348,9 +505,17 @@ export VIBE_TEMPERATURE=0.4
 export VIBE_API_URL="https://api.openai.com/v1"
 export VIBE_API_KEY="sk-..."
 export VIBE_MODEL="gpt-4"
-export VIBE_TEMPERATURE=0.5
+export VIBE_TEMPERATURE=0.2
 export VIBE_MAX_TOKENS=500
 export VIBE_TIMEOUT=30s
+
+# Parsing & Reliability (defaults shown, usually don't need to change)
+export VIBE_USE_STRUCTURED_OUTPUT=true
+export VIBE_MAX_RETRIES=3
+export VIBE_ENABLE_JSON_EXTRACTION=true
+export VIBE_STRICT_VALIDATION=true
+export VIBE_DEBUG_LOGS=false
+export VIBE_SHOW_RETRY_STATUS=true
 
 # Display Configuration
 export VIBE_SHOW_EXPLANATION=true
@@ -362,6 +527,23 @@ export VIBE_INTERACTIVE=false
 # Cache Configuration
 export VIBE_ENABLE_CACHE=true
 export VIBE_CACHE_TTL=24h
+```
+
+### Debugging Configuration
+
+When troubleshooting issues, use this minimal debug config:
+
+```bash 
+# Enable debug logging
+export VIBE_DEBUG_LOGS=true
+
+# Increase retries to see all fallback attempts
+export VIBE_MAX_RETRIES=5
+
+# Keep other settings at defaults
+export VIBE_ENABLE_JSON_EXTRACTION=true
+export VIBE_STRICT_VALIDATION=true
+export VIBE_SHOW_RETRY_STATUS=true
 ```
 
 ---
@@ -397,19 +579,47 @@ export VIBE_BINARY="/usr/local/bin/vibe"
 
 ## Quick Reference Table
 
+### Core Settings
+
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `VIBE_API_URL` | String | `http://localhost:11434/v1` | API endpoint URL |
 | `VIBE_API_KEY` | String | `""` | API authentication key |
 | `VIBE_MODEL` | String | `llama3:8b` | Model identifier |
-| `VIBE_TEMPERATURE` | Float | `0.7` | Randomness (0.0-2.0) |
+| `VIBE_TEMPERATURE` | Float | `0.2` | Randomness (0.0-2.0) |
 | `VIBE_MAX_TOKENS` | Integer | `500` | Max response tokens |
 | `VIBE_TIMEOUT` | Duration | `30s` | Request timeout |
+
+### Parsing & Reliability
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `VIBE_USE_STRUCTURED_OUTPUT` | Boolean | `true` | Use JSON schema for responses |
+| `VIBE_MAX_RETRIES` | Integer | `3` | Max retry attempts |
+| `VIBE_ENABLE_JSON_EXTRACTION` | Boolean | `true` | Extract JSON from corrupted responses |
+| `VIBE_STRICT_VALIDATION` | Boolean | `true` | Validate response structure |
+| `VIBE_DEBUG_LOGS` | Boolean | `false` | Enable debug logging |
+| `VIBE_SHOW_RETRY_STATUS` | Boolean | `true` | Show retry progress |
+
+### Display & Behavior
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
 | `VIBE_SHOW_EXPLANATION` | Boolean | `true` | Show explanations |
 | `VIBE_SHOW_WARNINGS` | Boolean | `true` | Show warnings |
 | `VIBE_INTERACTIVE` | Boolean | `false` | Confirm before insert |
+
+### Cache Settings
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
 | `VIBE_ENABLE_CACHE` | Boolean | `true` | Enable caching |
 | `VIBE_CACHE_TTL` | Duration | `24h` | Cache lifetime |
+
+### System
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
 | `VIBE_BINARY` | String | Auto | Binary path |
 
 ---
@@ -484,3 +694,10 @@ Test with a simple query:
 - Enable cache: `VIBE_ENABLE_CACHE=true`
 - Reduce `VIBE_MAX_TOKENS`
 - Use faster model or local LLM
+
+**Parsing failures or corrupted output**
+- Enable debug logs: `VIBE_DEBUG_LOGS=true`
+- Check logs for which layer is failing
+- Ensure JSON extraction is enabled: `VIBE_ENABLE_JSON_EXTRACTION=true`
+- Try lowering temperature: `VIBE_TEMPERATURE=0.3`
+- Increase retries: `VIBE_MAX_RETRIES=5`

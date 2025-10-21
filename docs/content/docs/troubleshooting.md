@@ -100,6 +100,87 @@ weight: 4
    rm -rf ~/.cache/vibe/*
    ```
 
+## Corrupted or Garbage Output
+
+**Symptoms:** Response contains garbage characters, escape sequences, or Unicode pollution like:
+```
+AWS?…..??……… ...…..??……....??…... …………â[201~[200~¦………
+```
+
+**Solutions:**
+
+vibe automatically handles corrupted LLM responses with multi-layer parsing. If you're still seeing issues:
+
+1. **Enable debug logs to see what's happening:**
+   ```bash
+   export VIBE_DEBUG_LOGS=true
+   ```
+   This will show:
+   - Raw LLM responses
+   - Parsing attempts and which layer succeeded/failed
+   - Extracted JSON content
+
+2. **Increase retry attempts:**
+   ```bash
+   export VIBE_MAX_RETRIES=5  # Default is 3
+   ```
+
+3. **Verify JSON extraction is enabled:**
+   ```bash
+   export VIBE_ENABLE_JSON_EXTRACTION=true  # Default
+   ```
+
+4. **Try lower temperature for cleaner output:**
+   ```bash
+   export VIBE_TEMPERATURE=0.3  # More deterministic
+   ```
+
+5. **Check which parsing layer is working:**
+   Debug logs will show messages like:
+   - `[SUCCESS] Layer 'structured_output' succeeded on attempt 1`
+   - `[SUCCESS] Layer 'enhanced_parsing' succeeded on attempt 2`
+   - `[JSON_EXTRACT] Success` - JSON was found in corrupted response
+
+## Parsing Errors
+
+**Symptoms:** Errors like "failed to parse text response" or "unable to extract valid JSON."
+
+**Solutions:**
+
+1. **Enable JSON extraction (should be default):**
+   ```bash
+   export VIBE_ENABLE_JSON_EXTRACTION=true
+   ```
+
+2. **Temporarily disable strict validation for testing:**
+   ```bash
+   export VIBE_STRICT_VALIDATION=false
+   ```
+   This bypasses validation of command/explanation fields. Useful for debugging.
+
+3. **Check debug logs to see parsing attempts:**
+   ```bash
+   export VIBE_DEBUG_LOGS=true
+   vibe "your query" 2>&1 | grep -E "\[ATTEMPT|SUCCESS|EXTRACT\]"
+   ```
+
+4. **Try with structured output disabled:**
+   ```bash
+   export VIBE_USE_STRUCTURED_OUTPUT=false
+   ```
+   This forces text parsing mode, which may work better for some models.
+
+5. **Some models produce cleaner JSON with lower temperature:**
+   ```bash
+   export VIBE_TEMPERATURE=0.3
+   ```
+
+6. **Report persistent parsing issues:**
+   If a specific query consistently fails, please report it with:
+   - The query that failed
+   - Debug logs (with sensitive info redacted)
+   - Your model and provider
+
 ## Ctrl+G Does Nothing
 
 **Symptoms:** Pressing `Ctrl+G` has no effect.
@@ -222,19 +303,47 @@ weight: 4
    make clean build
    ```
 
+## Understanding Debug Output
+
+When `VIBE_DEBUG_LOGS=true`, you'll see structured log messages:
+
+```
+[VIBE] [ATTEMPT 1][structured_output] Parsing failed: ...
+[VIBE] [ATTEMPT 2][enhanced_parsing] Parsing failed: ...
+[VIBE] [JSON_EXTRACT] Success
+Trimmed prefix: "AWS\x1b[200~..."
+Trimmed suffix: "...\x1b[201~"
+[VIBE] [SUCCESS] Layer 'enhanced_parsing' succeeded on attempt 2
+```
+
+**Key log types:**
+- `[ATTEMPT N][layer]` - Shows which parsing layer is being tried
+- `[JSON_EXTRACT]` - Shows JSON extraction from corrupted response
+- `[SUCCESS]` - Shows which layer and attempt succeeded
+- `Raw response (first 500 chars)` - Shows actual LLM output
+
+**Multi-layer fallback order:**
+1. `structured_output` - JSON schema mode (best)
+2. `enhanced_parsing` - Retry with JSON extraction
+3. `explicit_json_prompt` - Extra strict prompt with lower temperature
+4. `emergency_fallback` - Returns helpful error message
+
 ## Still Having Issues?
 
 If you're still experiencing problems:
 
-1. **Check the logs:**
+1. **Check the logs with debug enabled:**
    ```bash
-   # vibe logs errors to stderr
+   export VIBE_DEBUG_LOGS=true
    vibe "test query" 2>&1
    ```
 
-2. **Enable debug mode (if available):**
+2. **Test with minimal config:**
    ```bash
-   export VIBE_DEBUG=true
+   # Reset to defaults
+   unset VIBE_TEMPERATURE VIBE_MAX_TOKENS VIBE_USE_STRUCTURED_OUTPUT
+   export VIBE_DEBUG_LOGS=true
+   vibe "list files"
    ```
 
 3. **Report the issue:**
@@ -245,6 +354,8 @@ If you're still experiencing problems:
      - Oh-My-Zsh version
      - vibe configuration (environment variables)
      - Error messages or unexpected behavior
+     - Debug logs (redact any sensitive info)
+     - Which model/provider you're using
 
 4. **Join the community:**
    - Check existing issues for solutions

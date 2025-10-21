@@ -1,9 +1,12 @@
 package parser
 
 import (
+	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 
+	"github.com/skymoore/vibe-zsh/internal/logger"
 	"github.com/skymoore/vibe-zsh/internal/schema"
 )
 
@@ -83,6 +86,77 @@ func cleanMarkdown(text string) string {
 
 	text = regexp.MustCompile("(?i)^\\*\\*Command\\*\\*:?\\s*").ReplaceAllString(text, "")
 	text = regexp.MustCompile("(?i)^\\*\\*Explanation\\*\\*:?\\s*").ReplaceAllString(text, "")
+
+	return text
+}
+
+func ExtractJSON(corruptedText string) (string, error) {
+	original := corruptedText
+
+	firstBrace := strings.Index(corruptedText, "{")
+	lastBrace := strings.LastIndex(corruptedText, "}")
+
+	if firstBrace >= 0 && lastBrace > firstBrace {
+		candidate := corruptedText[firstBrace : lastBrace+1]
+		if json.Valid([]byte(candidate)) {
+			trimmedPrefix := corruptedText[:firstBrace]
+			trimmedSuffix := corruptedText[lastBrace+1:]
+			logger.LogJSONExtraction(original, candidate, trimmedPrefix, trimmedSuffix)
+			return candidate, nil
+		}
+	}
+
+	cleaned := RemoveGarbagePatterns(corruptedText)
+	if json.Valid([]byte(cleaned)) {
+		logger.Debug("JSON extraction: RemoveGarbagePatterns succeeded")
+		return cleaned, nil
+	}
+
+	fixed := AttemptJSONRepair(cleaned)
+	if json.Valid([]byte(fixed)) {
+		logger.Debug("JSON extraction: AttemptJSONRepair succeeded")
+		return fixed, nil
+	}
+
+	return "", fmt.Errorf("unable to extract valid JSON from response")
+}
+
+func RemoveGarbagePatterns(text string) string {
+	re1 := regexp.MustCompile(`\x1b\[[0-9]+~`)
+	text = re1.ReplaceAllString(text, "")
+
+	text = strings.ReplaceAll(text, "\u2028", "")
+	text = strings.ReplaceAll(text, "\u2029", "")
+
+	re2 := regexp.MustCompile(`[\x00-\x1f\x7f-\x9f]`)
+	text = re2.ReplaceAllString(text, "")
+
+	re3 := regexp.MustCompile(`[.…]{3,}`)
+	text = re3.ReplaceAllString(text, "")
+
+	re4 := regexp.MustCompile(`[^\x20-\x7E\n\t]`)
+	text = re4.ReplaceAllString(text, "")
+
+	return strings.TrimSpace(text)
+}
+
+func AttemptJSONRepair(text string) string {
+	text = strings.TrimSpace(text)
+
+	if !strings.HasPrefix(text, "{") {
+		if idx := strings.Index(text, "{"); idx >= 0 {
+			text = text[idx:]
+		}
+	}
+
+	if !strings.HasSuffix(text, "}") {
+		if idx := strings.LastIndex(text, "}"); idx >= 0 {
+			text = text[:idx+1]
+		}
+	}
+
+	text = regexp.MustCompile(`,\s*}`).ReplaceAllString(text, "}")
+	text = regexp.MustCompile(`,\s*]`).ReplaceAllString(text, "]")
 
 	return text
 }

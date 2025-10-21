@@ -30,7 +30,7 @@ docker ps -a
 
 ```bash
 brew tap skymoore/tap
-brew install vibe
+brew install --cask vibe-zsh
 ```
 
 Add to your `~/.zshrc`:
@@ -123,12 +123,32 @@ export VIBE_MODEL="llama-3.1-70b-versatile"
 
 ## Usage
 
-### Basic Usage
+### Plugin Usage (Recommended)
 
 1. Type a natural language description in your terminal
 2. Press `Ctrl+G`
 3. Review the generated command (with explanations)
 4. Press `Enter` to execute, or edit first
+
+### Direct CLI Usage
+
+You can also use vibe directly from the command line:
+
+```bash
+# Homebrew installation
+vibe-zsh "list all docker containers"
+
+# Manual installation (Oh-My-Zsh plugin)
+~/.oh-my-zsh/custom/plugins/vibe/vibe "list all docker containers"
+```
+
+**CLI Flags:**
+```bash
+vibe-zsh --help                    # Show all available flags
+vibe-zsh --debug "query"           # Enable debug logging
+vibe-zsh --temperature 0.1 "query" # Override temperature
+vibe-zsh --interactive "query"     # Confirm before execution
+```
 
 ### Examples
 
@@ -191,9 +211,10 @@ export VIBE_AUTO_UPDATE=false
 | `VIBE_API_URL` | `http://localhost:11434/v1` | API endpoint URL |
 | `VIBE_API_KEY` | `""` | API key (if required) |
 | `VIBE_MODEL` | `llama3:8b` | Model to use |
-| `VIBE_TEMPERATURE` | `0.7` | Generation temperature |
+| `VIBE_TEMPERATURE` | `0.2` | Generation temperature |
 | `VIBE_MAX_TOKENS` | `500` | Max response tokens |
 | `VIBE_TIMEOUT` | `30s` | Request timeout |
+| `VIBE_USE_STRUCTURED_OUTPUT` | `true` | Use JSON schema for structured responses |
 | `VIBE_SHOW_EXPLANATION` | `true` | Show command explanations |
 | `VIBE_SHOW_WARNINGS` | `true` | Show warnings for dangerous commands |
 | `VIBE_ENABLE_CACHE` | `true` | Enable response caching |
@@ -201,6 +222,11 @@ export VIBE_AUTO_UPDATE=false
 | `VIBE_INTERACTIVE` | `false` | Confirm before inserting |
 | `VIBE_AUTO_UPDATE` | `true` | Enable auto-update checks |
 | `VIBE_UPDATE_CHECK_INTERVAL` | `7d` | How often to check for updates |
+| `VIBE_MAX_RETRIES` | `3` | Max retry attempts for failed parsing |
+| `VIBE_ENABLE_JSON_EXTRACTION` | `true` | Extract JSON from corrupted responses |
+| `VIBE_STRICT_VALIDATION` | `true` | Validate response structure |
+| `VIBE_DEBUG_LOGS` | `false` | Enable debug logging for troubleshooting |
+| `VIBE_SHOW_RETRY_STATUS` | `true` | Show retry progress during generation |
 
 ## How It Works
 
@@ -273,6 +299,18 @@ The update check runs in a background process after each command, so it never sl
 - Make your query more specific
 - Check model supports structured output
 
+**Corrupted or garbage output:**
+- vibe now automatically handles corrupted LLM responses with multi-layer parsing
+- Enable debug logs to see what's happening: `export VIBE_DEBUG_LOGS=true`
+- Check logs for raw responses and parsing attempts
+- Try increasing retries: `export VIBE_MAX_RETRIES=5`
+
+**Parsing errors:**
+- Enable JSON extraction: `export VIBE_ENABLE_JSON_EXTRACTION=true` (default)
+- Disable strict validation temporarily: `export VIBE_STRICT_VALIDATION=false`
+- Check debug logs to see which parsing layer succeeded/failed
+- Some models produce cleaner JSON with lower temperature: `export VIBE_TEMPERATURE=0.3`
+
 **Ctrl+G does nothing:**
 - Ensure plugin is loaded: `which vibe` (should show a function)
 - Check no other plugin uses Ctrl+G
@@ -290,7 +328,7 @@ The update check runs in a background process after each command, so it never sl
 ### Homebrew
 
 ```bash
-brew uninstall vibe
+brew uninstall --cask vibe-zsh
 brew untap skymoore/tap  # Optional: remove the tap
 ```
 

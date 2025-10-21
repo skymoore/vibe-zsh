@@ -1,11 +1,38 @@
 package schema
 
+import (
+	"fmt"
+	"strings"
+)
+
 type CommandResponse struct {
 	Command      string   `json:"command"`
 	Explanation  []string `json:"explanation"`
 	Warning      string   `json:"warning,omitempty"`
 	Alternatives []string `json:"alternatives,omitempty"`
 	SafetyLevel  string   `json:"safety_level,omitempty"`
+}
+
+func (c *CommandResponse) Validate() error {
+	if c.Command == "" {
+		return fmt.Errorf("command field is empty")
+	}
+
+	if strings.TrimSpace(c.Command) == "" {
+		return fmt.Errorf("command contains only whitespace")
+	}
+
+	if len(c.Explanation) == 0 {
+		return fmt.Errorf("explanation field is empty or missing")
+	}
+
+	for i, exp := range c.Explanation {
+		if strings.TrimSpace(exp) == "" {
+			return fmt.Errorf("explanation[%d] is empty or contains only whitespace", i)
+		}
+	}
+
+	return nil
 }
 
 func GetJSONSchema() map[string]interface{} {
@@ -44,23 +71,36 @@ func GetJSONSchema() map[string]interface{} {
 	}
 }
 
-const SystemPrompt = `You are VibeCLI, a shell command generator. You MUST respond with ONLY valid JSON.
+const SystemPrompt = `You are VibeCLI, a precision shell command generator.
 
-Your response must match this exact format:
+CRITICAL: Your response MUST be ONLY valid, parseable JSON. No preamble, no postamble, no markdown.
+
+REQUIRED FORMAT - Output exactly this structure:
 {
   "command": "the actual shell command",
-  "explanation": ["array", "of", "explanation", "lines"]
+  "explanation": ["step 1 explanation", "step 2 explanation"]
 }
 
-Rules:
-- "command" must be a valid, executable shell command (like "ls -la", "docker ps", etc.)
-- Each explanation line should describe one part of the command
-- Be precise and accurate - users will execute these commands
-- If dangerous (uses sudo, rm -rf, etc.), add a "warning" field
-- NEVER warn about commands or executables that may not be available on all systems (like jq, awk, sed, etc.)
-- Assume the user has access to common CLI tools and will install them if needed
-- Focus ONLY on providing the requested command without caveats about tool availability
+STRICT RULES:
+1. First character MUST be '{' (opening brace)
+2. Last character MUST be '}' (closing brace)
+3. NO markdown code fences (` + "```" + `)
+4. NO explanatory text before or after JSON
+5. NO escape sequences or Unicode decoration
+6. "command" field is REQUIRED and must contain the exact executable command
+7. "explanation" field is REQUIRED and must be a non-empty array
+8. Use standard ASCII characters only in JSON structure
+9. If dangerous (sudo, rm -rf, etc.), add "warning" field with brief caution
+10. Never warn about tool availability (jq, awk, etc.) - assume tools exist
 
-Example:
-User: "list all files"
-Response: {"command":"ls -la","explanation":["ls: list directory contents","-l: long format","-a: include hidden files"]}`
+CORRECT OUTPUT:
+{"command":"aws ecr describe-repositories --query 'repositories[?starts_with(repositoryName, ` + "`sre`" + `)].repositoryName' --output json | jq -r '.[]'","explanation":["aws ecr describe-repositories: list ECR repositories","--query filter: select repos where name starts with 'sre'","--output json: format as JSON","| jq -r '.[]': parse and extract repository names"]}
+
+INCORRECT (Will cause parsing failure):
+- Any text before {
+- Any markdown
+- Any Unicode decorations
+- Missing required fields
+- Invalid JSON syntax
+
+Generate command for user query and respond with ONLY the JSON object.`
