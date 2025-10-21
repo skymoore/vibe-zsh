@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/skymoore/vibe-zsh/internal/client"
 	"github.com/skymoore/vibe-zsh/internal/config"
 	"github.com/skymoore/vibe-zsh/internal/formatter"
 	"github.com/skymoore/vibe-zsh/internal/logger"
 	"github.com/skymoore/vibe-zsh/internal/updater"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -98,14 +98,14 @@ func init() {
 	rootCmd.PersistentFlags().Float64Var(&temperature, "temperature", -1, "Generation temperature 0.0-2.0 (default: 0.2)")
 	rootCmd.PersistentFlags().IntVar(&maxTokens, "max-tokens", -1, "Maximum response tokens (default: 500)")
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 0, "Request timeout (default: 30s)")
-	
+
 	rootCmd.PersistentFlags().BoolVar(&useStructuredOutput, "structured-output", true, "Use JSON schema for responses")
 	rootCmd.PersistentFlags().BoolVar(&showExplanation, "explanation", true, "Show command explanations")
 	rootCmd.PersistentFlags().BoolVar(&showWarnings, "warnings", true, "Show warnings for dangerous commands")
 	rootCmd.PersistentFlags().BoolVar(&interactiveMode, "interactive", false, "Confirm before executing commands")
 	rootCmd.PersistentFlags().BoolVar(&enableCache, "cache", true, "Enable response caching")
 	rootCmd.PersistentFlags().DurationVar(&cacheTTL, "cache-ttl", 0, "Cache lifetime (default: 24h)")
-	
+
 	rootCmd.PersistentFlags().IntVar(&maxRetries, "max-retries", -1, "Max retry attempts (default: 3)")
 	rootCmd.PersistentFlags().BoolVar(&enableJSONExtraction, "json-extraction", true, "Extract JSON from corrupted responses")
 	rootCmd.PersistentFlags().BoolVar(&strictValidation, "strict-validation", true, "Validate response structure")
@@ -149,15 +149,33 @@ func initConfig() {
 		return
 	}
 
-	cfg.UseStructuredOutput = useStructuredOutput
-	cfg.ShowExplanation = showExplanation
-	cfg.ShowWarnings = showWarnings
-	cfg.InteractiveMode = interactiveMode
-	cfg.EnableCache = enableCache
-	cfg.EnableJSONExtraction = enableJSONExtraction
-	cfg.StrictValidation = strictValidation
-	cfg.EnableDebugLogs = debugLogs
-	cfg.ShowRetryStatus = showRetryStatus
+	if rootCmd.PersistentFlags().Changed("structured-output") {
+		cfg.UseStructuredOutput = useStructuredOutput
+	}
+	if rootCmd.PersistentFlags().Changed("explanation") {
+		cfg.ShowExplanation = showExplanation
+	}
+	if rootCmd.PersistentFlags().Changed("warnings") {
+		cfg.ShowWarnings = showWarnings
+	}
+	if rootCmd.PersistentFlags().Changed("interactive") {
+		cfg.InteractiveMode = interactiveMode
+	}
+	if rootCmd.PersistentFlags().Changed("cache") {
+		cfg.EnableCache = enableCache
+	}
+	if rootCmd.PersistentFlags().Changed("json-extraction") {
+		cfg.EnableJSONExtraction = enableJSONExtraction
+	}
+	if rootCmd.PersistentFlags().Changed("strict-validation") {
+		cfg.StrictValidation = strictValidation
+	}
+	if rootCmd.PersistentFlags().Changed("debug") {
+		cfg.EnableDebugLogs = debugLogs
+	}
+	if rootCmd.PersistentFlags().Changed("retry-status") {
+		cfg.ShowRetryStatus = showRetryStatus
+	}
 
 	logger.Init(cfg.EnableDebugLogs)
 }
