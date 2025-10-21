@@ -18,8 +18,10 @@ docker ps -a
 ## Features
 
 - 🧠 **Natural language to commands** - Just describe what you want
+- 🖥️ **OS-aware generation** - Commands that work on YOUR system (macOS/Linux/Windows)
 - ⚡ **Lightning fast** - Cached responses are 100-400x faster
-- 🔌 **Universal compatibility** - Works with Ollama, OpenAI, Claude, and more
+- 🎬 **Streaming output** - Typewriter effect with progress indicators
+- 🔌 **Universal compatibility** - Works with Ollama, LM Studio, OpenAI, Claude, and more
 - 🛡️ **Safe by default** - Preview commands before execution
 - 📚 **Learn while you work** - Inline explanations for every command
 - 🎯 **Zero dependencies** - Single compiled binary
@@ -210,34 +212,55 @@ export VIBE_AUTO_UPDATE=false
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| **API Configuration** | | |
 | `VIBE_API_URL` | `http://localhost:11434/v1` | API endpoint URL |
 | `VIBE_API_KEY` | `""` | API key (if required) |
 | `VIBE_MODEL` | `llama3:8b` | Model to use |
-| `VIBE_TEMPERATURE` | `0.2` | Generation temperature |
-| `VIBE_MAX_TOKENS` | `500` | Max response tokens |
+| `VIBE_TEMPERATURE` | `0.2` | Generation temperature (0.0-2.0) |
+| `VIBE_MAX_TOKENS` | `1000` | Max response tokens |
 | `VIBE_TIMEOUT` | `30s` | Request timeout |
-| `VIBE_USE_STRUCTURED_OUTPUT` | `true` | Use JSON schema for structured responses |
+| **Display Options** | | |
 | `VIBE_SHOW_EXPLANATION` | `true` | Show command explanations |
 | `VIBE_SHOW_WARNINGS` | `true` | Show warnings for dangerous commands |
+| `VIBE_SHOW_PROGRESS` | `true` | Show progress spinner during generation |
+| `VIBE_PROGRESS_STYLE` | `dots` | Spinner style: dots, line, circle, bounce, arrow |
+| `VIBE_STREAM_OUTPUT` | `true` | Stream output with typewriter effect |
+| `VIBE_STREAM_DELAY` | `20ms` | Delay between streamed words |
+| **Behavior** | | |
+| `VIBE_INTERACTIVE` | `false` | Confirm before inserting command |
+| `VIBE_USE_STRUCTURED_OUTPUT` | `true` | Use JSON schema for structured responses |
 | `VIBE_ENABLE_CACHE` | `true` | Enable response caching |
 | `VIBE_CACHE_TTL` | `24h` | Cache lifetime |
-| `VIBE_INTERACTIVE` | `false` | Confirm before inserting |
-| `VIBE_AUTO_UPDATE` | `true` | Enable auto-update checks |
-| `VIBE_UPDATE_CHECK_INTERVAL` | `7d` | How often to check for updates |
+| **Parsing & Retry** | | |
 | `VIBE_MAX_RETRIES` | `3` | Max retry attempts for failed parsing |
 | `VIBE_ENABLE_JSON_EXTRACTION` | `true` | Extract JSON from corrupted responses |
 | `VIBE_STRICT_VALIDATION` | `true` | Validate response structure |
-| `VIBE_DEBUG_LOGS` | `false` | Enable debug logging for troubleshooting |
 | `VIBE_SHOW_RETRY_STATUS` | `true` | Show retry progress during generation |
+| **Updates & Debugging** | | |
+| `VIBE_AUTO_UPDATE` | `true` | Enable auto-update checks |
+| `VIBE_UPDATE_CHECK_INTERVAL` | `7d` | How often to check for updates |
+| `VIBE_DEBUG_LOGS` | `false` | Enable debug logging for troubleshooting |
 
 ## How It Works
 
 1. **Capture** - You type natural language and press `Ctrl+G`
-2. **Generate** - vibe sends your query to the configured LLM
-3. **Parse** - Response is structured as command + explanations
-4. **Cache** - Response is cached for 24 hours (configurable)
-5. **Insert** - Command replaces your input for review
-6. **Execute** - You press Enter to run (or edit first)
+2. **Context** - vibe detects your OS (macOS/Linux/Windows) and shell (zsh/bash/etc.)
+3. **Generate** - vibe sends your query with system context to the configured LLM
+4. **Parse** - Response is structured as command + explanations
+5. **Cache** - Response is cached for 24 hours (configurable)
+6. **Stream** - Command is streamed to your terminal with typewriter effect
+7. **Insert** - Command appears in your buffer for review
+8. **Execute** - You press Enter to run (or edit first)
+
+### OS-Aware Command Generation
+
+vibe automatically detects your operating system and shell, ensuring generated commands work on your system:
+
+- **macOS**: Uses BSD utilities (e.g., `find` without `-printf`, `sed -i ''`)
+- **Linux**: Uses GNU utilities (e.g., `find -printf`, `sed -i`)
+- **Shell-specific**: Generates syntax appropriate for zsh, bash, etc.
+
+This means you get commands that actually work on your system, not generic Linux commands that fail on macOS!
 
 ## Performance
 

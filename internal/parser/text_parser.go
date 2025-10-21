@@ -84,8 +84,8 @@ func cleanMarkdown(text string) string {
 
 	text = regexp.MustCompile("`([^`]+)`").ReplaceAllString(text, "$1")
 
-	text = regexp.MustCompile("(?i)^\\*\\*Command\\*\\*:?\\s*").ReplaceAllString(text, "")
-	text = regexp.MustCompile("(?i)^\\*\\*Explanation\\*\\*:?\\s*").ReplaceAllString(text, "")
+	text = regexp.MustCompile(`(?i)^\*\*Command\*\*:?\s*`).ReplaceAllString(text, "")
+	text = regexp.MustCompile(`(?i)^\*\*Explanation\*\*:?\s*`).ReplaceAllString(text, "")
 
 	return text
 }

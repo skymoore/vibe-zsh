@@ -11,6 +11,7 @@ import (
 	vibeErrors "github.com/skymoore/vibe-zsh/internal/errors"
 	"github.com/skymoore/vibe-zsh/internal/logger"
 	"github.com/skymoore/vibe-zsh/internal/parser"
+	"github.com/skymoore/vibe-zsh/internal/progress"
 	"github.com/skymoore/vibe-zsh/internal/schema"
 )
 
@@ -85,16 +86,40 @@ func New(cfg *config.Config) *Client {
 }
 
 func (c *Client) GenerateCommand(ctx context.Context, query string) (*schema.CommandResponse, error) {
+	// Initialize spinner if progress is enabled and stderr is a terminal
+	var spinner *progress.Spinner
+	if c.config.ShowProgress && progress.IsStderrTerminal() {
+		spinner = progress.NewSpinner(c.config.ProgressStyle)
+		defer spinner.Stop()
+	}
+
+	// Check cache first
+	if spinner != nil {
+		spinner.Start(ctx, "Checking cache...")
+	}
+
 	if c.cache != nil {
 		if cached, ok := c.cache.Get(query); ok {
+			// Cache hit - stop spinner immediately
+			if spinner != nil {
+				spinner.Stop()
+			}
 			return cached, nil
 		}
+	}
+
+	// Update spinner for API call
+	if spinner != nil {
+		spinner.Update("Contacting API...")
 	}
 
 	var resp *schema.CommandResponse
 	var err error
 
 	if c.config.UseStructuredOutput {
+		if spinner != nil {
+			spinner.Update("Generating command...")
+		}
 		resp, err = c.generateWithStructuredOutput(ctx, query)
 		if err == nil && c.config.StrictValidation {
 			if validErr := resp.Validate(); validErr == nil {
@@ -110,7 +135,10 @@ func (c *Client) GenerateCommand(ctx context.Context, query string) (*schema.Com
 		logger.LogParsingFailure(1, "structured_output", "", err)
 	}
 
-	resp, err = c.generateWithEnhancedParsing(ctx, query)
+	if spinner != nil {
+		spinner.Update("Parsing response...")
+	}
+	resp, err = c.generateWithEnhancedParsing(ctx, query, spinner)
 	if err == nil {
 		c.cacheIfEnabled(query, resp)
 		logger.LogLayerSuccess("enhanced_parsing", 2)
@@ -118,6 +146,9 @@ func (c *Client) GenerateCommand(ctx context.Context, query string) (*schema.Com
 	}
 	logger.LogParsingFailure(2, "enhanced_parsing", "", err)
 
+	if spinner != nil {
+		spinner.Update("Retrying with explicit JSON...")
+	}
 	resp, err = c.generateWithExplicitJSONPrompt(ctx, query)
 	if err == nil {
 		c.cacheIfEnabled(query, resp)
@@ -126,19 +157,26 @@ func (c *Client) GenerateCommand(ctx context.Context, query string) (*schema.Com
 	}
 	logger.LogParsingFailure(3, "explicit_json_prompt", "", err)
 
-	resp, err = c.generateWithEmergencyFallback(ctx, query)
-	if err == nil {
+	if spinner != nil {
+		spinner.Update("Using fallback...")
+	}
+
+	// Pass the last error to the fallback so it can provide better feedback
+	resp, fallbackErr := c.generateWithEmergencyFallback(ctx, query, err)
+	if fallbackErr == nil {
 		logger.LogLayerSuccess("emergency_fallback", 4)
 		return resp, nil
 	}
-	logger.LogParsingFailure(4, "emergency_fallback", "", err)
+	logger.LogParsingFailure(4, "emergency_fallback", "", fallbackErr)
 
 	return nil, fmt.Errorf("all parsing strategies failed: %w", err)
 }
 
 func (c *Client) cacheIfEnabled(query string, resp *schema.CommandResponse) {
 	if c.cache != nil {
-		c.cache.Set(query, resp)
+		if err := c.cache.Set(query, resp); err != nil {
+			logger.Debug("Failed to cache response: %v", err)
+		}
 	}
 }
 
@@ -146,7 +184,7 @@ func (c *Client) generateWithStructuredOutput(ctx context.Context, query string)
 	messages := []Message{
 		{
 			Role:    "system",
-			Content: schema.SystemPrompt,
+			Content: schema.GetSystemPrompt(c.config.OSName, c.config.Shell),
 		},
 		{
 			Role:    "user",
@@ -185,49 +223,17 @@ func (c *Client) generateWithStructuredOutput(ctx context.Context, query string)
 	return &cmdResp, nil
 }
 
-func (c *Client) generateWithTextParsing(ctx context.Context, query string) (*schema.CommandResponse, error) {
-	messages := []Message{
-		{
-			Role:    "system",
-			Content: schema.SystemPrompt,
-		},
-		{
-			Role:    "user",
-			Content: query,
-		},
-	}
-
-	req := ChatCompletionRequest{
-		Model:       c.config.Model,
-		Messages:    messages,
-		Temperature: c.config.Temperature,
-		MaxTokens:   c.config.MaxTokens,
-		Stream:      false,
-	}
-
-	chatResp, err := c.doRequest(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	content := chatResp.Choices[0].Message.Content
-
-	cmdResp, err := parser.ParseTextResponse(content)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse text response: %w", err)
-	}
-
-	return cmdResp, nil
-}
-
-func (c *Client) generateWithEnhancedParsing(ctx context.Context, query string) (*schema.CommandResponse, error) {
+func (c *Client) generateWithEnhancedParsing(ctx context.Context, query string, spinner *progress.Spinner) (*schema.CommandResponse, error) {
 	var lastErr error
 
 	for attempt := 1; attempt <= c.config.MaxRetries; attempt++ {
+		if spinner != nil && c.config.MaxRetries > 1 {
+			spinner.Update(fmt.Sprintf("Parsing response (attempt %d/%d)...", attempt, c.config.MaxRetries))
+		}
 		messages := []Message{
 			{
 				Role:    "system",
-				Content: schema.SystemPrompt,
+				Content: schema.GetSystemPrompt(c.config.OSName, c.config.Shell),
 			},
 			{
 				Role:    "user",
@@ -300,7 +306,7 @@ func (c *Client) generateWithEnhancedParsing(ctx context.Context, query string) 
 }
 
 func (c *Client) generateWithExplicitJSONPrompt(ctx context.Context, query string) (*schema.CommandResponse, error) {
-	explicitPrompt := schema.SystemPrompt + "\n\nREMINDER: Your response must START with { and END with }. Nothing else."
+	explicitPrompt := schema.GetSystemPrompt(c.config.OSName, c.config.Shell) + "\n\nREMINDER: Your response must START with { and END with }. Nothing else."
 
 	messages := []Message{
 		{
@@ -365,13 +371,21 @@ func (c *Client) generateWithExplicitJSONPrompt(ctx context.Context, query strin
 	return &cmdResp, nil
 }
 
-func (c *Client) generateWithEmergencyFallback(ctx context.Context, query string) (*schema.CommandResponse, error) {
+func (c *Client) generateWithEmergencyFallback(ctx context.Context, query string, lastErr error) (*schema.CommandResponse, error) {
+	explanation := []string{
+		fmt.Sprintf("Vibe failed to generate a valid command after %d attempts.", c.config.MaxRetries),
+	}
+
+	// Add specific error information if available
+	if lastErr != nil {
+		explanation = append(explanation, fmt.Sprintf("Error: %v", lastErr))
+	}
+
+	explanation = append(explanation, "Try rephrasing your request or report at: https://github.com/skymoore/vibe-zsh/issues")
+
 	return &schema.CommandResponse{
-		Command: "",
-		Explanation: []string{
-			fmt.Sprintf("Vibe failed to generate a valid command after %d attempts.", c.config.MaxRetries),
-			"Try rephrasing your request or report at: https://github.com/skymoore/vibe-zsh/issues",
-		},
-		Warning: "Parsing failed - unable to extract valid command",
+		Command:     "",
+		Explanation: explanation,
+		Warning:     "Failed to generate command",
 	}, nil
 }

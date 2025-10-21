@@ -4,13 +4,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/skymoore/vibe-zsh/internal/client"
 	"github.com/skymoore/vibe-zsh/internal/config"
-	"github.com/skymoore/vibe-zsh/internal/formatter"
 	"github.com/skymoore/vibe-zsh/internal/logger"
+	"github.com/skymoore/vibe-zsh/internal/progress"
+	"github.com/skymoore/vibe-zsh/internal/streamer"
 	"github.com/skymoore/vibe-zsh/internal/updater"
 	"github.com/spf13/cobra"
 )
@@ -36,20 +39,24 @@ var (
 	strictValidation     bool
 	debugLogs            bool
 	showRetryStatus      bool
+	showProgress         bool
+	progressStyle        string
+	streamOutput         bool
+	streamDelay          time.Duration
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "vibe [query]",
+	Use:   "vibe-zsh [query]",
 	Short: "Transform natural language into shell commands using AI",
-	Long: `Vibe is a CLI tool that converts natural language descriptions into executable shell commands.
+	Long: `vibe-zsh is a CLI tool that converts natural language descriptions into executable shell commands.
 
-Simply describe what you want to do in plain English, and vibe will generate the appropriate
-command using AI. It works with any OpenAI-compatible API (Ollama, OpenAI, Claude, etc.).
+Simply describe what you want to do in plain English, and vibe-zsh will generate the appropriate
+command using AI. It works with any OpenAI-compatible API (Ollama, LM Studio, OpenAI, Claude, etc.).
 
 Examples:
-  vibe "list all docker containers"
-  vibe "find all python files modified today"
-  vibe "show me commits from last week"
+  vibe-zsh "list all docker containers"
+  vibe-zsh "find all python files modified today"
+  vibe-zsh "show me commits from last week"
 
 For more information, visit: https://github.com/skymoore/vibe-zsh`,
 	Args: cobra.MinimumNArgs(1),
@@ -62,16 +69,16 @@ For more information, visit: https://github.com/skymoore/vibe-zsh`,
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the version number of vibe",
+	Short: "Print the version number of vibe-zsh",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("vibe version %s\n", appVersion)
+		fmt.Printf("vibe-zsh version %s\n", appVersion)
 		updater.ShowUpdateNotification(appVersion)
 	},
 }
 
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update vibe to the latest version",
+	Short: "Update vibe-zsh to the latest version",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := updater.PerformUpdate(appVersion); err != nil {
 			fmt.Fprintf(os.Stderr, "Update failed: %v\n", err)
@@ -112,6 +119,11 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&debugLogs, "debug", false, "Enable debug logging")
 	rootCmd.PersistentFlags().BoolVar(&showRetryStatus, "retry-status", true, "Show retry progress")
 
+	rootCmd.PersistentFlags().BoolVar(&showProgress, "progress", true, "Show progress spinner")
+	rootCmd.PersistentFlags().StringVar(&progressStyle, "progress-style", "", "Spinner style: dots, line, circle, bounce, arrow (default: dots)")
+	rootCmd.PersistentFlags().BoolVar(&streamOutput, "stream", true, "Stream output with typewriter effect")
+	rootCmd.PersistentFlags().DurationVar(&streamDelay, "stream-delay", 0, "Delay between streamed words (default: 20ms)")
+
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(updateCmd)
 	rootCmd.AddCommand(checkUpdateCmd)
@@ -145,7 +157,7 @@ func initConfig() {
 		cfg.MaxRetries = maxRetries
 	}
 
-	if cmd, _, err := rootCmd.Find(os.Args[1:]); err == nil && cmd.Use != "vibe [query]" {
+	if cmd, _, err := rootCmd.Find(os.Args[1:]); err == nil && cmd.Use != "vibe-zsh [query]" {
 		return
 	}
 
@@ -176,13 +188,141 @@ func initConfig() {
 	if rootCmd.PersistentFlags().Changed("retry-status") {
 		cfg.ShowRetryStatus = showRetryStatus
 	}
+	if rootCmd.PersistentFlags().Changed("progress") {
+		cfg.ShowProgress = showProgress
+	}
+	if rootCmd.PersistentFlags().Changed("progress-style") && progressStyle != "" {
+		cfg.ProgressStyle = parseProgressStyle(progressStyle)
+	}
+	if rootCmd.PersistentFlags().Changed("stream") {
+		cfg.StreamOutput = streamOutput
+	}
+	if rootCmd.PersistentFlags().Changed("stream-delay") {
+		cfg.StreamDelay = streamDelay
+	}
 
 	logger.Init(cfg.EnableDebugLogs)
 }
 
+func parseProgressStyle(style string) progress.SpinnerStyle {
+	switch strings.ToLower(style) {
+	case "dots":
+		return progress.StyleDots
+	case "line":
+		return progress.StyleLine
+	case "circle":
+		return progress.StyleCircle
+	case "bounce":
+		return progress.StyleBounce
+	case "arrow":
+		return progress.StyleArrow
+	default:
+		return progress.StyleDots
+	}
+}
+
+// normalizeQuotes replaces smart quotes with straight quotes for shell compatibility
+func normalizeQuotes(s string) string {
+	// Replace smart/curly quotes with straight quotes using Unicode code points
+	replacer := strings.NewReplacer(
+		"\u201C", `"`, // Left double quote
+		"\u201D", `"`, // Right double quote
+		"\u2018", "'", // Left single quote
+		"\u2019", "'", // Right single quote
+		"\u201A", "'", // Single low quote
+		"\u201E", `"`, // Double low quote
+		"\u2039", "'", // Single left angle quote
+		"\u203A", "'", // Single right angle quote
+		"\u00AB", `"`, // Double left angle quote
+		"\u00BB", `"`, // Double right angle quote
+	)
+	return replacer.Replace(s)
+}
+
+// cleanExplanation removes terminal escape codes and problematic Unicode characters
+func cleanExplanation(s string) string {
+	// Remove ANSI escape codes (like bracketed paste mode)
+	// Pattern: ESC [ ... (any characters) ... letter
+	result := ""
+	inEscape := false
+	for i := 0; i < len(s); i++ {
+		if s[i] == 0x1B && i+1 < len(s) && s[i+1] == '[' {
+			// Start of ANSI escape sequence
+			inEscape = true
+			i++ // Skip the '['
+			continue
+		}
+		if inEscape {
+			// Skip until we find a letter (end of escape sequence)
+			if (s[i] >= 'A' && s[i] <= 'Z') || (s[i] >= 'a' && s[i] <= 'z') || s[i] == '~' {
+				inEscape = false
+			}
+			continue
+		}
+		result += string(s[i])
+	}
+
+	// Replace problematic Unicode characters
+	replacer := strings.NewReplacer(
+		"\u2026", "...", // Ellipsis → three dots
+		"\u2013", "-", // En dash → hyphen
+		"\u2014", "--", // Em dash → double hyphen
+		"\u00a0", " ", // Non-breaking space → regular space
+	)
+	result = replacer.Replace(result)
+
+	// Trim whitespace
+	result = strings.TrimSpace(result)
+
+	// Filter out garbage explanations (too many ellipses, question marks, or very short)
+	if isGarbageExplanation(result) {
+		return ""
+	}
+
+	return result
+}
+
+// isGarbageExplanation detects if an explanation is corrupted/garbage
+func isGarbageExplanation(s string) bool {
+	// Too short to be useful
+	if len(s) < 10 {
+		return true
+	}
+
+	// Count problematic characters
+	ellipsisCount := strings.Count(s, "...")
+	questionCount := strings.Count(s, "???")
+
+	// Too many ellipses or question marks indicates garbage
+	if ellipsisCount > 2 || questionCount > 0 {
+		return true
+	}
+
+	// Check for excessive Unicode ellipsis characters (even after replacement)
+	unicodeEllipsisCount := 0
+	for _, r := range s {
+		if r == '\u2026' {
+			unicodeEllipsisCount++
+		}
+	}
+	return unicodeEllipsisCount > 2
+}
+
 func generateCommand(query string) {
+	// Setup context with cancellation for Ctrl+C handling
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle Ctrl+C gracefully
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigCh
+		cancel()     // Cancel context, spinner stops via ctx.Done()
+		os.Exit(130) // Standard exit code for SIGINT
+	}()
+
 	c := client.New(cfg)
-	ctx := context.Background()
 
 	resp, err := c.GenerateCommand(ctx, query)
 	if err != nil {
@@ -190,8 +330,75 @@ func generateCommand(query string) {
 		os.Exit(1)
 	}
 
-	output := formatter.Format(resp, cfg.ShowExplanation, cfg.ShowWarnings)
-	fmt.Print(output)
+	// Debug: Print full JSON response as comments
+	if cfg.EnableDebugLogs {
+		logger.Debug("=== Full Response ===")
+		logger.Debug("Command: %s", resp.Command)
+		logger.Debug("Explanation count: %d", len(resp.Explanation))
+		for i, exp := range resp.Explanation {
+			logger.Debug("Explanation[%d]: %q", i, exp)
+			logger.Debug("Explanation[%d] hex: % x", i, exp)
+		}
+		logger.Debug("Warning: %s", resp.Warning)
+		logger.Debug("====================")
+	}
+
+	// Normalize quotes on the command
+	normalizedCommand := normalizeQuotes(resp.Command)
+
+	// Show explanations to stderr if enabled (user sees these while command loads into buffer)
+	if cfg.ShowExplanation && len(resp.Explanation) > 0 {
+		hasGarbage := false
+		validExplanations := 0
+
+		for _, line := range resp.Explanation {
+			// Clean the explanation line: remove escape codes and normalize
+			cleanLine := cleanExplanation(normalizeQuotes(line))
+			if cleanLine != "" {
+				// Stream each explanation line with typewriter effect
+				if cfg.StreamOutput && cfg.ShowProgress {
+					fmt.Fprint(os.Stderr, "# ")
+					if err := streamer.StreamWord(os.Stderr, cleanLine, cfg.StreamDelay); err != nil {
+						fmt.Fprint(os.Stderr, cleanLine)
+					}
+					fmt.Fprintln(os.Stderr)
+				} else {
+					fmt.Fprintf(os.Stderr, "# %s\n", cleanLine)
+				}
+				validExplanations++
+			} else {
+				hasGarbage = true
+			}
+		}
+
+		// Warn if we detected garbage explanations
+		if hasGarbage || validExplanations == 0 {
+			fmt.Fprintln(os.Stderr, "#")
+			fmt.Fprintln(os.Stderr, "# ⚠️  Model generated incomplete explanations")
+			fmt.Fprintln(os.Stderr, "# Try a different model or increase VIBE_MAX_TOKENS")
+		}
+
+		if cfg.ShowWarnings && resp.Warning != "" {
+			cleanWarning := cleanExplanation(normalizeQuotes(resp.Warning))
+			if cleanWarning != "" {
+				if cfg.StreamOutput && cfg.ShowProgress {
+					fmt.Fprint(os.Stderr, "# WARNING: ")
+					if err := streamer.StreamWord(os.Stderr, cleanWarning, cfg.StreamDelay); err != nil {
+						fmt.Fprint(os.Stderr, cleanWarning)
+					}
+					fmt.Fprintln(os.Stderr)
+				} else {
+					fmt.Fprintf(os.Stderr, "# WARNING: %s\n", cleanWarning)
+				}
+			}
+		}
+	}
+
+	// Ensure all stderr output is flushed before writing to stdout
+	os.Stderr.Sync()
+
+	// Output only the command to stdout (this is what ZSH captures for the buffer)
+	fmt.Print(normalizedCommand)
 
 	updater.ShowUpdateNotification(appVersion)
 }

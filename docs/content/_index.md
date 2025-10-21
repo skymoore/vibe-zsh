@@ -16,7 +16,7 @@ layout: hextra-home
 
 <div class="hx-mb-12">
 {{< hextra/hero-subtitle >}}
-  Works with any OpenAI-compatible API. Ollama, OpenAI, Claude, and more.&nbsp;<br class="sm:hx-block hx-hidden" />Fast, safe, and zero dependencies.
+  OS-aware commands for macOS, Linux, and Windows.&nbsp;<br class="sm:hx-block hx-hidden" />Works with Ollama, LM Studio, OpenAI, Claude, and more.
 {{< /hextra/hero-subtitle >}}
 </div>
 
@@ -32,12 +32,20 @@ layout: hextra-home
     subtitle="Just describe what you want in plain English. Press Ctrl+G and get the command."
   >}}
   {{< hextra/feature-card
+    title="OS-Aware Generation"
+    subtitle="Commands that work on YOUR system. Automatically detects macOS, Linux, or Windows."
+  >}}
+  {{< hextra/feature-card
     title="Lightning Fast"
     subtitle="Cached responses are 100-400x faster. First query ~500ms-2s, cached ~5-10ms."
   >}}
   {{< hextra/feature-card
+    title="Streaming Output"
+    subtitle="Typewriter effect with progress indicators. Watch commands appear in real-time."
+  >}}
+  {{< hextra/feature-card
     title="Universal Compatibility"
-    subtitle="Works with Ollama, OpenAI, Claude, Groq, and any OpenAI-compatible API."
+    subtitle="Works with Ollama, LM Studio, OpenAI, Claude, Groq, and any OpenAI-compatible API."
   >}}
   {{< hextra/feature-card
     title="Safe by Default"

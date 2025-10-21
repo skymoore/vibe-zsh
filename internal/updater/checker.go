@@ -103,7 +103,10 @@ func CheckForUpdatesBackground(currentVersion string) {
 		state.NotificationShown = false
 	}
 
-	SaveState(state)
+	if err := SaveState(state); err != nil {
+		// Silently ignore state save errors in background check
+		return
+	}
 }
 
 func ShowUpdateNotification(currentVersion string) {
@@ -124,5 +127,8 @@ func ShowUpdateNotification(currentVersion string) {
 	fmt.Fprintf(os.Stderr, "   Run: vibe --update\n\n")
 
 	state.NotificationShown = true
-	SaveState(state)
+	if err := SaveState(state); err != nil {
+		// Silently ignore state save errors in notification
+		return
+	}
 }

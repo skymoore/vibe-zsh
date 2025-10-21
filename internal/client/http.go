@@ -35,7 +35,17 @@ func (c *Client) doRequest(ctx context.Context, req ChatCompletionRequest) (*Cha
 
 		resp, err := c.httpClient.Do(httpReq)
 		if err != nil {
-			return fmt.Errorf("%w: %v", vibeErrors.ErrTimeout, err)
+			// Provide more specific error messages for connection issues
+			if strings.Contains(err.Error(), "connection refused") {
+				return fmt.Errorf("connection refused: cannot reach API at %s - check if the service is running", c.config.APIURL)
+			}
+			if strings.Contains(err.Error(), "no such host") {
+				return fmt.Errorf("cannot resolve host: %s - check your VIBE_API_URL", c.config.APIURL)
+			}
+			if strings.Contains(err.Error(), "timeout") || strings.Contains(err.Error(), "deadline exceeded") {
+				return fmt.Errorf("request timeout: API at %s is not responding - check your connection", c.config.APIURL)
+			}
+			return fmt.Errorf("network error: %v - check your VIBE_API_URL (%s)", err, c.config.APIURL)
 		}
 		defer resp.Body.Close()
 
