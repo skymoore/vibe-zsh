@@ -27,15 +27,15 @@ OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
 if [ "$OS" = "darwin" ]; then
     if [ "$ARCH" = "arm64" ]; then
-        BINARY="vibe-darwin-arm64"
+        PLATFORM="darwin-arm64"
     else
-        BINARY="vibe-darwin-amd64"
+        PLATFORM="darwin-amd64"
     fi
 elif [ "$OS" = "linux" ]; then
     if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
-        BINARY="vibe-linux-arm64"
+        PLATFORM="linux-arm64"
     else
-        BINARY="vibe-linux-amd64"
+        PLATFORM="linux-amd64"
     fi
 else
     echo "❌ Unsupported OS: $OS"
@@ -63,25 +63,26 @@ if [ -z "$LATEST_RELEASE" ]; then
     cp _vibe "$INSTALL_DIR/"
 else
     echo "📥 Downloading release ${LATEST_RELEASE}..."
-    DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_RELEASE}/${BINARY}"
+    ARCHIVE="vibe-zsh-${LATEST_RELEASE}-${PLATFORM}.tar.gz"
+    DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_RELEASE}/${ARCHIVE}"
     CHECKSUMS_URL="https://github.com/${REPO}/releases/download/${LATEST_RELEASE}/checksums.txt"
     
-    if ! curl -fsSL "$DOWNLOAD_URL" -o vibe; then
-        echo "❌ Failed to download binary"
+    if ! curl -fsSL "$DOWNLOAD_URL" -o "${ARCHIVE}"; then
+        echo "❌ Failed to download archive"
         exit 1
     fi
     
     echo "🔐 Verifying checksum..."
     if curl -fsSL "$CHECKSUMS_URL" -o checksums.txt 2>/dev/null; then
         if command -v sha256sum &> /dev/null; then
-            if echo "$(grep "$BINARY" checksums.txt)" | sha256sum -c --status 2>/dev/null; then
+            if echo "$(grep "$ARCHIVE" checksums.txt)" | sha256sum -c --status 2>/dev/null; then
                 echo "✓ Checksum verified"
             else
                 echo "⚠️  Checksum verification failed, but continuing..."
             fi
         elif command -v shasum &> /dev/null; then
-            EXPECTED=$(grep "$BINARY" checksums.txt | awk '{print $1}')
-            ACTUAL=$(shasum -a 256 vibe | awk '{print $1}')
+            EXPECTED=$(grep "$ARCHIVE" checksums.txt | awk '{print $1}')
+            ACTUAL=$(shasum -a 256 "${ARCHIVE}" | awk '{print $1}')
             if [ "$EXPECTED" = "$ACTUAL" ]; then
                 echo "✓ Checksum verified"
             else
@@ -93,10 +94,16 @@ else
         echo "⚠️  Could not download checksums, skipping verification"
     fi
     
-    chmod +x vibe
+    echo "📦 Extracting archive..."
+    tar -xzf "${ARCHIVE}"
     
-    curl -fsSL "https://raw.githubusercontent.com/${REPO}/${LATEST_RELEASE}/vibe.plugin.zsh" -o vibe.plugin.zsh
-    curl -fsSL "https://raw.githubusercontent.com/${REPO}/${LATEST_RELEASE}/_vibe" -o _vibe
+    if [ ! -d "vibe-zsh" ]; then
+        echo "❌ Failed to extract archive"
+        exit 1
+    fi
+    
+    cd vibe-zsh
+    chmod +x vibe
     
     mkdir -p "$INSTALL_DIR"
     cp vibe "$INSTALL_DIR/"
