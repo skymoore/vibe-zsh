@@ -62,17 +62,19 @@ homebrew_casks:
       If Oh My Zsh is installed, vibe has been automatically configured in ~/.zshrc.
       Please run: source ~/.zshrc
 
-      If Oh My Zsh is not installed, install it: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+      If Oh My Zsh is not installed, install it: sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"
+
       Then add the following to your ~/.zshrc:
         plugins=(... vibe)
-        export PATH="#{staged_path}/bin:$PATH"
-        source "#{staged_path}/vibe.plugin.zsh"
+        export PATH=\"#{staged_path}/bin:$PATH\"
+        source \"#{staged_path}/vibe.plugin.zsh\"
         fpath=(#{staged_path} $fpath)
+
       And run: source ~/.zshrc
 
       Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
-        export VIBE_API_URL="http://localhost:11434/v1"
-        export VIBE_MODEL="llama3:8b"
+        export VIBE_API_URL=\"http://localhost:11434/v1\"
+        export VIBE_MODEL=\"llama3:8b\"
 
       Use Ctrl+G to transform natural language into commands!
 
