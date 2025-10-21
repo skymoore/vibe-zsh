@@ -44,32 +44,37 @@ changelog:
       - Merge pull request
       - Merge branch
 
-homebrew_casks:
-  - repository:
+homebrew:
+  - tap:
       owner: skymoore
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    folder: Formula
     homepage: https://github.com/skymoore/vibe-zsh
     description: "Transform natural language into shell commands using AI"
     license: GPL-3.0
-    caveats: |
-      vibe has been installed to:
-        #{staged_path}
+    dependencies:
+      - name: zsh
+    install: |
+      bin.install "vibe"
+      prefix.install "vibe.plugin.zsh", "_vibe"
+    post_install: |
+      ohai "To activate vibe, add to ~/.zshrc:"
+      puts 'export PATH="#{opt_bin}:$PATH"'
+      puts 'source "#{opt_prefix}/vibe.plugin.zsh"'
+      puts 'fpath=(#{opt_prefix} $fpath)'
+      puts "Reload: source ~/.zshrc"
+      puts "Configure: export VIBE_API_URL=... (see README)"
+    caveats: "Use Ctrl+G to transform commands! See README for details."
+    bottle: true
 
-      To activate vibe, add the following to your ~/.zshrc:
+signs:
+  - artifacts: all
+    args: ["--keychain", "temp.keychain", "--timestamp"]
 
-        export PATH=\"#{staged_path}:$PATH\"
-        source \"#{staged_path}/vibe.plugin.zsh\"
-        fpath=(#{staged_path} $fpath)
-
-      Then reload your shell:
-        source ~/.zshrc
-
-      Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
-        export VIBE_API_URL=\"http://localhost:11434/v1\"
-        export VIBE_MODEL=\"llama3:8b\"
-
-      Use Ctrl+G to transform natural language into commands!
+notarize:
+  - bundle_id: dev.vibe-zsh
+    apple_id: "{{ .Env.APPLE_ID }}"
 
 release:
   github:
