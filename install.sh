@@ -76,11 +76,13 @@ else
     echo "🔐 Verifying checksum..."
     if curl -fsSL "$CHECKSUMS_URL" -o checksums.txt 2>/dev/null; then
         if command -v sha256sum &> /dev/null; then
-            if echo "$(grep "$ARCHIVE" checksums.txt)" | sha256sum -c --status 2>/dev/null; then
+            grep "$ARCHIVE" checksums.txt > archive_checksum.txt
+            if sha256sum -c --status archive_checksum.txt 2>/dev/null; then
                 echo "✓ Checksum verified"
             else
                 echo "⚠️  Checksum verification failed, but continuing..."
             fi
+            rm -f archive_checksum.txt
         elif command -v shasum &> /dev/null; then
             EXPECTED=$(grep "$ARCHIVE" checksums.txt | awk '{print $1}')
             ACTUAL=$(shasum -a 256 "${ARCHIVE}" | awk '{print $1}')
