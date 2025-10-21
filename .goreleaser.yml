@@ -54,24 +54,73 @@ homebrew_casks:
     license: GPL-3.0
     dependencies:
       - formula: zsh
-    caveats: |
-      vibe has been installed to:
-        #{staged_path}
+    caveats: |-
+      vibe requires Oh My Zsh for Ctrl+G functionality.
 
-      To activate vibe, add the following to your ~/.zshrc:
+      vibe has been installed to: #{staged_path}
 
-        export PATH=\"#{staged_path}/bin:$PATH\"
-        source \"#{staged_path}/vibe.plugin.zsh\"
+      If Oh My Zsh is installed, vibe has been automatically configured in ~/.zshrc.
+      Please run: source ~/.zshrc
+
+      If Oh My Zsh is not installed, install it: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+      Then add the following to your ~/.zshrc:
+        plugins=(... vibe)
+        export PATH="#{staged_path}/bin:$PATH"
+        source "#{staged_path}/vibe.plugin.zsh"
         fpath=(#{staged_path} $fpath)
-
-      Then reload your shell:
-        source ~/.zshrc
+      And run: source ~/.zshrc
 
       Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
-        export VIBE_API_URL=\"http://localhost:11434/v1\"
-        export VIBE_MODEL=\"llama3:8b\"
+        export VIBE_API_URL="http://localhost:11434/v1"
+        export VIBE_MODEL="llama3:8b"
 
       Use Ctrl+G to transform natural language into commands!
+
+    hooks:
+      post:
+        install: |-
+          oh_my_zsh_dir = "#{Dir.home}/.oh-my-zsh"
+          zshrc_path = "#{Dir.home}/.zshrc"
+          staged_path = "#{staged_path}"
+
+          unless Dir.exist?(oh_my_zsh_dir)
+            puts "Warning: Oh My Zsh is not installed. vibe requires Oh My Zsh for Ctrl+G functionality."
+            puts "Please install Oh My Zsh: sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
+            puts "After installation, add the following to your ~/.zshrc:"
+            puts "  plugins=(... vibe)"
+            puts "  export PATH=\"#{staged_path}/bin:$PATH\""
+            puts "  source \"#{staged_path}/vibe.plugin.zsh\""
+            puts "  fpath=(#{staged_path} $fpath)"
+            puts "Then source ~/.zshrc"
+          else
+            # Check and add to plugins if needed
+            zshrc_content = File.read(zshrc_path) rescue ""
+            unless zshrc_content.include?("plugins=(... vibe)") # simplistic check
+              puts "Adding 'vibe' to plugins in ~/.zshrc"
+              # Append or modify plugins line - this is tricky, but for simplicity:
+              if zshrc_content.include?("plugins=")
+                zshrc_content.gsub!(/plugins=\((.*?)\)/) { |m| m.sub(/\)$/, " vibe)") }
+              else
+                zshrc_content += "\nplugins=(vibe)\n"
+              end
+              File.write(zshrc_path, zshrc_content)
+            end
+
+            # Add other lines if not present
+            lines_to_add = [
+              "export PATH=\"#{staged_path}/bin:$PATH\"",
+              "source \"#{staged_path}/vibe.plugin.zsh\"",
+              "fpath=(#{staged_path} $fpath)"
+            ]
+            lines_to_add.each do |line|
+              unless zshrc_content.include?(line)
+                zshrc_content += "\n#{line}\n"
+              end
+            end
+            File.write(zshrc_path, zshrc_content)
+
+            puts "vibe setup complete. Please run: source ~/.zshrc"
+          end
 
 notarize:
   macos:
@@ -99,7 +148,7 @@ release:
     ### Homebrew (Recommended)
     ```bash
     brew tap skymoore/tap
-    brew install vibe
+    brew install --cask vibe-zsh
     ```
 
     ### One-line install script
