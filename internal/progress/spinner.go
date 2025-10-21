@@ -18,6 +18,7 @@ const (
 	StyleCircle SpinnerStyle = "circle"
 	StyleBounce SpinnerStyle = "bounce"
 	StyleArrow  SpinnerStyle = "arrow"
+	StyleRunes  SpinnerStyle = "runes"
 )
 
 var spinnerFrames = map[SpinnerStyle][]string{
@@ -26,6 +27,7 @@ var spinnerFrames = map[SpinnerStyle][]string{
 	StyleCircle: {"◐", "◓", "◑", "◒"},
 	StyleBounce: {"⠁", "⠂", "⠄", "⠂"},
 	StyleArrow:  {"←", "↖", "↑", "↗", "→", "↘", "↓", "↙"},
+	StyleRunes:  {"ᛜ", "ᛜ", "ᛜ", "ᛃ", "ᛃ", "ᛃ", "ᛋ", "ᛋ", "ᛋ", "ᛃ", "ᛃ", "ᛃ"},
 }
 
 // Spinner provides an animated progress indicator that writes to stderr

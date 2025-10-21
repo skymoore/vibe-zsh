@@ -121,7 +121,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&showRetryStatus, "retry-status", true, "Show retry progress")
 
 	rootCmd.PersistentFlags().BoolVar(&showProgress, "progress", true, "Show progress spinner")
-	rootCmd.PersistentFlags().StringVar(&progressStyle, "progress-style", "", "Spinner style: dots, line, circle, bounce, arrow (default: dots)")
+	rootCmd.PersistentFlags().StringVar(&progressStyle, "progress-style", "", "Spinner style: dots, line, circle, bounce, arrow, runes (default: dots)")
 	rootCmd.PersistentFlags().BoolVar(&streamOutput, "stream", true, "Stream output with typewriter effect")
 	rootCmd.PersistentFlags().DurationVar(&streamDelay, "stream-delay", 0, "Delay between streamed words (default: 20ms)")
 
@@ -217,6 +217,8 @@ func parseProgressStyle(style string) progress.SpinnerStyle {
 		return progress.StyleBounce
 	case "arrow":
 		return progress.StyleArrow
+	case "runes":
+		return progress.StyleRunes
 	default:
 		return progress.StyleDots
 	}

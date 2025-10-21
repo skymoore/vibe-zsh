@@ -222,6 +222,46 @@ rm -rf *
 
 ---
 
+#### VIBE_PROGRESS_STYLE
+
+**Type:** String  
+**Default:** `dots`  
+**Description:** The visual style of the progress spinner shown during command generation.
+
+**Examples:**
+
+```bash 
+# Dots (default)
+export VIBE_PROGRESS_STYLE=dots
+
+# Line
+export VIBE_PROGRESS_STYLE=line
+
+# Circle
+export VIBE_PROGRESS_STYLE=circle
+
+# Bounce
+export VIBE_PROGRESS_STYLE=bounce
+
+# Arrow
+export VIBE_PROGRESS_STYLE=arrow
+
+# Runes
+export VIBE_PROGRESS_STYLE=runes
+```
+
+**Available Styles:**
+- `dots` - Braille dot animation (⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+- `line` - Classic line spinner (- \ | /)
+- `circle` - Rotating circle (◐ ◓ ◑ ◒)
+- `bounce` - Bouncing dots (⠁ ⠂ ⠄ ⠂)
+- `arrow` - Rotating arrow (← ↖ ↑ ↗ → ↘ ↓ ↙)
+- `runes` - Norse runes (ᛜ ᛃ ᛋ)
+
+**Note:** The spinner is only shown when `VIBE_SHOW_PROGRESS=true` (default).
+
+---
+
 ### Behavior Configuration
 
 #### VIBE_INTERACTIVE

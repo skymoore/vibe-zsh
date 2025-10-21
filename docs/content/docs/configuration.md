@@ -61,8 +61,16 @@ export VIBE_SHOW_PROGRESS=false
 Choose spinner style (default: `dots`):
 
 ```bash
-export VIBE_PROGRESS_STYLE=arrow  # Options: dots, line, circle, bounce, arrow
+export VIBE_PROGRESS_STYLE=arrow  # Options: dots, line, circle, bounce, arrow, runes
 ```
+
+**Available Styles:**
+- `dots` - ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏
+- `line` - - \ | /
+- `circle` - ◐ ◓ ◑ ◒
+- `bounce` - ⠁ ⠂ ⠄ ⠂
+- `arrow` - ← ↖ ↑ ↗ → ↘ ↓ ↙
+- `runes` - ᛜ ᛃ ᛋ (Norse runes)
 
 ### Streaming Output
 

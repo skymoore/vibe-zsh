@@ -286,7 +286,7 @@ export VIBE_ENABLE_HISTORY=false
 | `VIBE_SHOW_EXPLANATION` | `true` | Show command explanations |
 | `VIBE_SHOW_WARNINGS` | `true` | Show warnings for dangerous commands |
 | `VIBE_SHOW_PROGRESS` | `true` | Show progress spinner during generation |
-| `VIBE_PROGRESS_STYLE` | `dots` | Spinner style: dots, line, circle, bounce, arrow |
+| `VIBE_PROGRESS_STYLE` | `dots` | Spinner style: dots, line, circle, bounce, arrow, runes (ᛜ ᛃ ᛋ) |
 | `VIBE_STREAM_OUTPUT` | `true` | Stream output with typewriter effect |
 | `VIBE_STREAM_DELAY` | `20ms` | Delay between streamed words |
 | **Behavior** | | |

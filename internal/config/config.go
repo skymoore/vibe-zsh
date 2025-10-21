@@ -151,11 +151,20 @@ func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
 
 func getEnvProgressStyle(key string, defaultValue progress.SpinnerStyle) progress.SpinnerStyle {
 	if value := os.Getenv(key); value != "" {
-		style := progress.SpinnerStyle(value)
-		// Validate it's a known style
-		switch style {
-		case progress.StyleDots, progress.StyleLine, progress.StyleCircle, progress.StyleBounce, progress.StyleArrow:
-			return style
+		// Convert to lowercase and match against known styles
+		switch value {
+		case "dots":
+			return progress.StyleDots
+		case "line":
+			return progress.StyleLine
+		case "circle":
+			return progress.StyleCircle
+		case "bounce":
+			return progress.StyleBounce
+		case "arrow":
+			return progress.StyleArrow
+		case "runes":
+			return progress.StyleRunes
 		}
 	}
 	return defaultValue

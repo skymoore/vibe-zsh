@@ -14,12 +14,45 @@ import (
 )
 
 var (
-	titleStyle        = lipgloss.NewStyle().MarginLeft(2)
-	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
-	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
-	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+	titleStyle = lipgloss.NewStyle().
+			MarginLeft(2).
+			Bold(true).
+			Foreground(lipgloss.Color("205")). // Bright pink
+			Background(lipgloss.Color("235"))  // Dark gray
+
+	itemStyle = lipgloss.NewStyle().
+			PaddingLeft(4)
+
+	selectedItemStyle = lipgloss.NewStyle().
+				PaddingLeft(2).
+				Foreground(lipgloss.Color("86")). // Cyan
+				Bold(true)
+
+	timestampStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("241")) // Gray
+
+	queryStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("117")) // Light blue
+
+	commandStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("229")). // Light yellow
+			Italic(true)
+
+	arrowStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("241")) // Gray
+
+	paginationStyle = list.DefaultStyles().PaginationStyle.
+			PaddingLeft(4).
+			Foreground(lipgloss.Color("241"))
+
+	helpStyle = list.DefaultStyles().HelpStyle.
+			PaddingLeft(4).
+			PaddingBottom(1).
+			Foreground(lipgloss.Color("241"))
+
+	quitTextStyle = lipgloss.NewStyle().
+			Margin(1, 0, 2, 4).
+			Foreground(lipgloss.Color("203")) // Red
 )
 
 type item struct {
@@ -46,7 +79,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	}
 
 	// Format timestamp
-	timestamp := i.entry.Timestamp.Format("Jan 02 15:04")
+	timestamp := timestampStyle.Render(i.entry.Timestamp.Format("Jan 02 15:04"))
 
 	// Truncate command if too long
 	command := i.entry.Command
@@ -54,16 +87,24 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		command = command[:57] + "..."
 	}
 
-	str := fmt.Sprintf("%s  %s\n    → %s", timestamp, i.entry.Query, command)
+	// Build the item with colors
+	query := queryStyle.Render(i.entry.Query)
+	arrow := arrowStyle.Render("→")
+	cmd := commandStyle.Render(command)
 
-	fn := itemStyle.Render
 	if index == m.Index() {
-		fn = func(s ...string) string {
-			return selectedItemStyle.Render("▸ " + strings.Join(s, " "))
-		}
+		// Selected item - highlight everything
+		line1 := fmt.Sprintf("%s  %s", timestamp, query)
+		line2 := fmt.Sprintf("    %s %s", arrow, cmd)
+		str := fmt.Sprintf("%s\n%s", line1, line2)
+		fmt.Fprint(w, selectedItemStyle.Render("▸ "+str))
+	} else {
+		// Normal item - use individual colors
+		line1 := fmt.Sprintf("%s  %s", timestamp, query)
+		line2 := fmt.Sprintf("    %s %s", arrow, cmd)
+		str := fmt.Sprintf("%s\n%s", line1, line2)
+		fmt.Fprint(w, itemStyle.Render(str))
 	}
-
-	fmt.Fprint(w, fn(str))
 }
 
 type model struct {
@@ -161,12 +202,16 @@ func ShowInteractive(entries []Entry) (*SelectionResult, error) {
 	const listHeight = 20
 
 	l := list.New(items, itemDelegate{}, defaultWidth, listHeight)
-	l.Title = "Query History"
+	l.Title = " 📜 Query History "
 	l.SetShowStatusBar(false)
 	l.SetFilteringEnabled(true)
 	l.Styles.Title = titleStyle
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
+
+	// Customize filter prompt colors
+	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	// Add custom help
 	l.AdditionalShortHelpKeys = func() []key.Binding {
