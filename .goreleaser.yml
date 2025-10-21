@@ -70,7 +70,7 @@ homebrew_casks:
 
       For Direct CLI Usage:
         The executable is available as: vibe-zsh
-        Example: vibe-zsh "list all docker containers"
+        Example: vibe-zsh \"list all docker containers\"
 
       Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
         export VIBE_API_URL=\"http://localhost:11434/v1\"
