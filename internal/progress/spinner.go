@@ -130,10 +130,17 @@ func (s *Spinner) run() {
 	// Hide cursor for clean animation
 	fmt.Fprint(s.stderr, "\033[?25l")
 
+	// Write initial frame immediately
+	s.mu.Lock()
+	frame := s.frames[0]
+	msg := s.message
+	s.mu.Unlock()
+	fmt.Fprintf(s.stderr, "\033[2K\r%s %s", frame, msg)
+
 	ticker := time.NewTicker(80 * time.Millisecond)
 	defer ticker.Stop()
 
-	frameIdx := 0
+	frameIdx := 1 // Start from 1 since we already showed frame 0
 
 	for {
 		select {

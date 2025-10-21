@@ -202,16 +202,23 @@ func StreamLine(w io.Writer, text string, delay time.Duration) error {
 
 // tokenize splits text into words and whitespace tokens
 func tokenize(text string) []string {
+	if text == "" {
+		return []string{}
+	}
+
 	var tokens []string
 	var current strings.Builder
 
-	inWord := false
+	// Determine if we're starting in a word or whitespace
+	firstChar := rune(text[0])
+	inWord := !unicode.IsSpace(firstChar)
 
 	for _, ch := range text {
 		isSpace := unicode.IsSpace(ch)
 
-		if isSpace != inWord {
-			// Transition between word and whitespace
+		// Check if we're transitioning between word and whitespace
+		if isSpace == inWord {
+			// Transition: save current token and start new one
 			if current.Len() > 0 {
 				tokens = append(tokens, current.String())
 				current.Reset()
