@@ -221,24 +221,6 @@ func parseProgressStyle(style string) progress.SpinnerStyle {
 	}
 }
 
-// normalizeQuotes replaces smart quotes with straight quotes for shell compatibility
-func normalizeQuotes(s string) string {
-	// Replace smart/curly quotes with straight quotes using Unicode code points
-	replacer := strings.NewReplacer(
-		"\u201C", `"`, // Left double quote
-		"\u201D", `"`, // Right double quote
-		"\u2018", "'", // Left single quote
-		"\u2019", "'", // Right single quote
-		"\u201A", "'", // Single low quote
-		"\u201E", `"`, // Double low quote
-		"\u2039", "'", // Single left angle quote
-		"\u203A", "'", // Single right angle quote
-		"\u00AB", `"`, // Double left angle quote
-		"\u00BB", `"`, // Double right angle quote
-	)
-	return replacer.Replace(s)
-}
-
 // cleanExplanation removes terminal escape codes and problematic Unicode characters
 func cleanExplanation(s string) string {
 	// Remove ANSI escape codes (like bracketed paste mode)
@@ -343,17 +325,14 @@ func generateCommand(query string) {
 		logger.Debug("====================")
 	}
 
-	// Normalize quotes on the command
-	normalizedCommand := normalizeQuotes(resp.Command)
-
 	// Show explanations to stderr if enabled (user sees these while command loads into buffer)
 	if cfg.ShowExplanation && len(resp.Explanation) > 0 {
 		hasGarbage := false
 		validExplanations := 0
 
 		for _, line := range resp.Explanation {
-			// Clean the explanation line: remove escape codes and normalize
-			cleanLine := cleanExplanation(normalizeQuotes(line))
+			// Clean the explanation line: remove escape codes
+			cleanLine := cleanExplanation(line)
 			if cleanLine != "" {
 				// Stream each explanation line with typewriter effect
 				if cfg.StreamOutput && cfg.ShowProgress {
@@ -379,7 +358,7 @@ func generateCommand(query string) {
 		}
 
 		if cfg.ShowWarnings && resp.Warning != "" {
-			cleanWarning := cleanExplanation(normalizeQuotes(resp.Warning))
+			cleanWarning := cleanExplanation(resp.Warning)
 			if cleanWarning != "" {
 				if cfg.StreamOutput && cfg.ShowProgress {
 					fmt.Fprint(os.Stderr, "# WARNING: ")
@@ -398,7 +377,7 @@ func generateCommand(query string) {
 	os.Stderr.Sync()
 
 	// Output only the command to stdout (this is what ZSH captures for the buffer)
-	fmt.Print(normalizedCommand)
+	fmt.Print(resp.Command)
 
 	updater.ShowUpdateNotification(appVersion)
 }
