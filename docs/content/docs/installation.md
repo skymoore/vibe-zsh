@@ -12,19 +12,18 @@ brew tap skymoore/tap
 brew install --cask vibe-zsh
 ```
 
-Add the following line to your `~/.zshrc`:
+The Homebrew installation automatically:
+1. Installs vibe to `~/.oh-my-zsh/custom/plugins/vibe`
+2. Adds `vibe` to your plugins list in `~/.zshrc`
+3. Creates a global `vibe-zsh` command for CLI usage
 
-```bash
-source "$(brew --prefix)/opt/vibe/libexec/vibe.plugin.zsh"
-```
-
-Then reload your shell:
+After installation, reload your shell:
 
 ```bash
 source ~/.zshrc
 ```
 
-Zsh completions are installed automatically.
+**Note:** Homebrew installation requires Oh-My-Zsh. If you don't have it installed, the installer will provide instructions.
 
 ## Oh-My-Zsh Plugin
 
@@ -47,10 +46,9 @@ wget -qO- https://raw.githubusercontent.com/skymoore/vibe-zsh/main/install.sh | 
 {{< /tabs >}}
 
 This script will:
-1. Clone the repository to `~/.oh-my-zsh/custom/plugins/vibe`
-2. Build the binary for your platform
-3. Add the plugin to your `.zshrc`
-4. Reload your shell
+1. Download the latest release for your platform (or clone and build from source if no release is available)
+2. Install to `~/.oh-my-zsh/custom/plugins/vibe`
+3. Display instructions for adding `vibe` to your plugins list in `.zshrc`
 
 ## Manual Install
 
