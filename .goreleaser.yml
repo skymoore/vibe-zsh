@@ -44,37 +44,51 @@ changelog:
       - Merge pull request
       - Merge branch
 
-homebrew:
-  - tap:
+homebrew_casks:
+  - repository:
       owner: skymoore
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    folder: Formula
     homepage: https://github.com/skymoore/vibe-zsh
     description: "Transform natural language into shell commands using AI"
     license: GPL-3.0
     dependencies:
-      - name: zsh
-    install: |
-      bin.install "vibe"
-      prefix.install "vibe.plugin.zsh", "_vibe"
-    post_install: |
-      ohai "To activate vibe, add to ~/.zshrc:"
-      puts 'export PATH="#{opt_bin}:$PATH"'
-      puts 'source "#{opt_prefix}/vibe.plugin.zsh"'
-      puts 'fpath=(#{opt_prefix} $fpath)'
-      puts "Reload: source ~/.zshrc"
-      puts "Configure: export VIBE_API_URL=... (see README)"
-    caveats: "Use Ctrl+G to transform commands! See README for details."
-    bottle: true
+      - formula: zsh
+    caveats: |
+      vibe has been installed to:
+        #{staged_path}
+
+      To activate vibe, add the following to your ~/.zshrc:
+
+        export PATH=\"#{staged_path}/bin:$PATH\"
+        source \"#{staged_path}/vibe.plugin.zsh\"
+        fpath=(#{staged_path} $fpath)
+
+      Then reload your shell:
+        source ~/.zshrc
+
+      Configure your AI provider (see https://github.com/skymoore/vibe-zsh#configuration):
+        export VIBE_API_URL=\"http://localhost:11434/v1\"
+        export VIBE_MODEL=\"llama3:8b\"
+
+      Use Ctrl+G to transform natural language into commands!
 
 signs:
   - artifacts: all
     args: ["--keychain", "temp.keychain", "--timestamp"]
 
 notarize:
-  - bundle_id: dev.vibe-zsh
-    apple_id: "{{ .Env.APPLE_ID }}"
+  macos:
+    - enabled: true
+      ids:
+        - vibe
+      sign:
+        certificate: "{{ .Env.APPLE_CERT_B64 }}"
+        password: "{{ .Env.APPLE_CERT_PASSWORD }}"
+      notarize:
+        issuer_id: "{{ .Env.APPLE_NOTARY_KEY_ISSUER_ID }}"
+        key_id: "{{ .Env.APPLE_NOTARY_KEY_ID }}"
+        key: "{{ .Env.APPLE_NOTARY_KEY_B64 }}"
 
 release:
   github:

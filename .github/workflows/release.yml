@@ -20,10 +20,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.25.3'
+
+      - name: Install GoReleaser
+        run: go install github.com/goreleaser/goreleaser/v2@latest
 
       - name: Build Linux artifacts
-        run: goreleaser build --clean --skip-validate --id vibe --single-target
+        run: ~/go/bin/goreleaser build --clean --skip=validate --id vibe --single-target
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -44,13 +47,16 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.25.3'
+
+      - name: Install GoReleaser
+        run: brew install goreleaser
 
       - name: Decode and Import Certificate
         run: |
           echo "$APPLE_CERT_B64" | base64 -d > cert.p12
           security create-keychain -p temp temp.keychain
-          security default-keychain temp.keychain
+          security default-keychain -s temp.keychain
           security unlock-keychain -p temp temp.keychain
           security import cert.p12 -k temp.keychain -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k temp temp.keychain
@@ -59,15 +65,15 @@ jobs:
           APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
 
       - name: Build and Sign macOS artifacts
-        run: goreleaser build --clean --skip-validate --id vibe --single-target
+        run: goreleaser build --clean --skip=validate --id vibe --single-target
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Notarize macOS artifacts
-        run: |
-          for file in dist/vibe_darwin_*; do
-            xcrun notarytool submit "$file" --apple-id "${{ secrets.APPLE_ID }}" --team-id "${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_NOTARY_PASSWORD }}" --wait
-          done
+          APPLE_CERT_B64: ${{ secrets.APPLE_CERT_B64 }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_NOTARY_KEY_B64: ${{ secrets.APPLE_NOTARY_KEY_B64 }}
+          APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
+          APPLE_NOTARY_KEY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_KEY_ISSUER_ID }}
 
       - name: Cleanup Keychain
         if: always()
