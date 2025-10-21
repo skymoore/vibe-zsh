@@ -24,6 +24,7 @@ docker ps -a
 - 🔌 **Universal compatibility** - Works with Ollama, LM Studio, OpenAI, Claude, and more
 - 🛡️ **Safe by default** - Preview commands before execution
 - 📚 **Learn while you work** - Inline explanations for every command
+- 📜 **Query history** - Interactive menu to browse and re-run previous queries
 - 🎯 **Zero dependencies** - Single compiled binary
 
 ## Installation
@@ -134,6 +135,23 @@ export VIBE_MODEL="llama-3.1-70b-versatile"
 3. Review the generated command (with explanations)
 4. Press `Enter` to execute, or edit first
 
+**History Menu:**
+
+Access your query history in two ways:
+
+1. **Keybinding**: Press `Ctrl+X` then `H`
+2. **Command**: Type `vh` and press Enter
+
+Both methods open an interactive menu where you can:
+- Browse previous queries with arrow keys
+- Search with `/` (filter mode)
+- Press `Enter` to insert the selected command into your buffer
+- Press `Esc` or `q` to cancel
+
+The selected command appears on your command line, ready to execute!
+
+**Note**: Don't run `vibe-zsh history` or `./vibe history` directly - use `vh` or the keybinding instead.
+
 ### Direct CLI Usage
 
 You can also use vibe directly from the command line:
@@ -154,7 +172,32 @@ vibe-zsh --temperature 0.1 "query" # Override temperature
 vibe-zsh --interactive "query"     # Confirm before execution
 ```
 
+**History Commands:**
+```bash
+vh                                 # Interactive menu (recommended)
+vibe-zsh history list              # List history in plain text
+vibe-zsh history clear             # Clear all history
+
+# Note: Use 'vh' or Ctrl+X H for interactive menu
+# Don't use 'vibe-zsh history' directly (it just outputs to stdout)
+```
+
 ### Examples
+
+**Query History:**
+```bash
+# Open history menu with keybinding
+Ctrl+X H
+
+# Or use the command
+vh
+
+# List history in plain text
+vibe-zsh history list
+
+# Clear all history
+vibe-zsh history clear
+```
 
 **File Operations:**
 ```bash
@@ -208,6 +251,17 @@ export VIBE_ENABLE_CACHE=false
 export VIBE_AUTO_UPDATE=false
 ```
 
+**Customize History Keybinding:**
+```bash
+export VIBE_HISTORY_KEY="^R"   # Use Ctrl+R instead
+# Note: Avoid ^H (Ctrl+H) as it conflicts with Backspace
+```
+
+**Disable History:**
+```bash
+export VIBE_ENABLE_HISTORY=false
+```
+
 ## Configuration Reference
 
 | Variable | Default | Description |
@@ -236,6 +290,10 @@ export VIBE_AUTO_UPDATE=false
 | `VIBE_ENABLE_JSON_EXTRACTION` | `true` | Extract JSON from corrupted responses |
 | `VIBE_STRICT_VALIDATION` | `true` | Validate response structure |
 | `VIBE_SHOW_RETRY_STATUS` | `true` | Show retry progress during generation |
+| **History** | | |
+| `VIBE_ENABLE_HISTORY` | `true` | Enable query history tracking |
+| `VIBE_HISTORY_SIZE` | `100` | Maximum number of history entries |
+| `VIBE_HISTORY_KEY` | `^Xh` (Ctrl+X H) | Keybinding for history menu |
 | **Updates & Debugging** | | |
 | `VIBE_AUTO_UPDATE` | `true` | Enable auto-update checks |
 | `VIBE_UPDATE_CHECK_INTERVAL` | `7d` | How often to check for updates |

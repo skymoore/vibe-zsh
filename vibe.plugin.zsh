@@ -51,6 +51,51 @@ zle -N vibe
 
 bindkey '^G' vibe
 
+# History widget - shows interactive history menu
+function vibe-history-widget() {
+  # Call vibe-zsh history command
+  local cmd=$("$VIBE_BINARY" history 2>/dev/null)
+  local exit_code=$?
+  
+  if [[ $exit_code -eq 0 && -n "$cmd" ]]; then
+    # Clear buffer and reset prompt
+    BUFFER=""
+    CURSOR=0
+    zle reset-prompt
+    
+    # Set new buffer with selected command and move cursor to end
+    BUFFER="$cmd"
+    CURSOR=${#BUFFER}
+    zle redisplay
+  fi
+}
+
+zle -N vibe-history-widget
+
+# Configurable keybinding for history (default: Ctrl+X H)
+# Users can override with: export VIBE_HISTORY_KEY="^R" for Ctrl+R, etc.
+local history_key="${VIBE_HISTORY_KEY:-^Xh}"
+bindkey "$history_key" vibe-history-widget
+
+# Shell function for direct command-line use
+# Usage: vh
+# 
+# This provides the same interactive history experience as Ctrl+X H
+# but can be invoked by typing 'vh' on the command line.
+# 
+# The selected command is inserted into your ZSH buffer using print -z,
+# making it appear on your command line ready for execution.
+function vh() {
+  local cmd=$("$VIBE_BINARY" history 2>/dev/null)
+  local exit_code=$?
+  
+  if [[ $exit_code -eq 0 && -n "$cmd" ]]; then
+    # Use print -z to add command to the editing buffer
+    # This makes it appear on the command line ready for execution
+    print -z "$cmd"
+  fi
+}
+
 fpath+="${VIBE_PLUGIN_DIR}"
 autoload -Uz compinit
 compinit

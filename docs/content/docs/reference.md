@@ -407,6 +407,88 @@ export VIBE_SHOW_RETRY_STATUS=false
 
 ---
 
+### History Configuration
+
+#### VIBE_ENABLE_HISTORY
+
+**Type:** Boolean  
+**Default:** `true`  
+**Description:** Enable automatic tracking of query history.
+
+**Examples:**
+
+```bash 
+# Enable history (default)
+export VIBE_ENABLE_HISTORY=true
+
+# Disable history
+export VIBE_ENABLE_HISTORY=false
+```
+
+**When enabled:**
+- Queries and generated commands are saved to `~/.cache/vibe/history.json`
+- Access history via `vh` command or `Ctrl+X H` keybinding
+- History persists across terminal sessions
+
+---
+
+#### VIBE_HISTORY_SIZE
+
+**Type:** Integer  
+**Default:** `100`  
+**Description:** Maximum number of history entries to keep. Older entries are automatically removed when limit is reached.
+
+**Examples:**
+
+```bash 
+# Default (100 entries)
+export VIBE_HISTORY_SIZE=100
+
+# More history
+export VIBE_HISTORY_SIZE=200
+
+# Less history (faster loading)
+export VIBE_HISTORY_SIZE=50
+```
+
+**Storage:** Each entry is ~100-200 bytes, so 100 entries ≈ 10-20KB
+
+---
+
+#### VIBE_HISTORY_KEY
+
+**Type:** String  
+**Default:** `^Xh` (Ctrl+X H)  
+**Description:** Keybinding to open the interactive history menu.
+
+**Examples:**
+
+```bash 
+# Default (Ctrl+X H)
+export VIBE_HISTORY_KEY="^Xh"
+
+# Use Ctrl+R instead
+export VIBE_HISTORY_KEY="^R"
+
+# Use Ctrl+X followed by Ctrl+H
+export VIBE_HISTORY_KEY="^X^H"
+```
+
+**Format:** ZSH keybinding notation
+- `^X` = Ctrl+X
+- `^R` = Ctrl+R
+- `^[h` = Alt+H (may not work on all systems)
+
+**Warning:** Avoid `^H` (Ctrl+H) as it conflicts with Backspace.
+
+**History Access Methods:**
+1. **Keybinding:** Press the configured key combination
+2. **Command:** Type `vh` and press Enter
+
+Both methods open the same interactive menu and insert the selected command into your buffer.
+
+---
+
 ### Cache Configuration
 
 #### VIBE_ENABLE_CACHE
@@ -524,6 +606,11 @@ export VIBE_SHOW_WARNINGS=true
 # Behavior Configuration
 export VIBE_INTERACTIVE=false
 
+# History Configuration
+export VIBE_ENABLE_HISTORY=true
+export VIBE_HISTORY_SIZE=100
+export VIBE_HISTORY_KEY="^Xh"
+
 # Cache Configuration
 export VIBE_ENABLE_CACHE=true
 export VIBE_CACHE_TTL=24h
@@ -609,6 +696,14 @@ export VIBE_BINARY="/usr/local/bin/vibe"
 | `VIBE_SHOW_WARNINGS` | Boolean | `true` | Show warnings |
 | `VIBE_INTERACTIVE` | Boolean | `false` | Confirm before insert |
 
+### History Settings
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `VIBE_ENABLE_HISTORY` | Boolean | `true` | Enable history tracking |
+| `VIBE_HISTORY_SIZE` | Integer | `100` | Max history entries |
+| `VIBE_HISTORY_KEY` | String | `^Xh` | History keybinding |
+
 ### Cache Settings
 
 | Variable | Type | Default | Description |
@@ -645,6 +740,11 @@ vibe uses **environment variables only** - no configuration files are required o
 ~/.cache/vibe/
 ```
 
+**History location:**
+```
+~/.cache/vibe/history.json
+```
+
 **Plugin location:**
 ```
 ~/.oh-my-zsh/custom/plugins/vibe/
@@ -654,6 +754,14 @@ To reset cache:
 
 ```bash 
 rm -rf ~/.cache/vibe/*
+```
+
+To clear history:
+
+```bash
+vibe-zsh history clear
+# or manually:
+rm ~/.cache/vibe/history.json
 ```
 
 ---

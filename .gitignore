@@ -7,3 +7,6 @@ vibe-*
 *.p8
 *.cer
 *.b64
+docs/public
+dist/
+

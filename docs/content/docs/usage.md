@@ -13,6 +13,37 @@ Using vibe is simple:
 3. **Review** the generated command (with explanations)
 4. **Press** `Enter` to execute, or edit first
 
+## Query History
+
+Vibe automatically saves your queries and generated commands. Access your history in two ways:
+
+### Using the Keybinding
+
+Press `Ctrl+X` then `H` to open the interactive history menu.
+
+### Using the Command
+
+Type `vh` and press Enter to open the interactive history menu.
+
+### History Menu Features
+
+- **Navigate** with arrow keys
+- **Search** by pressing `/` to filter entries
+- **Select** by pressing `Enter` - the command is inserted into your buffer
+- **Cancel** by pressing `Esc` or `q`
+
+### History Management
+
+```bash
+# View history in plain text
+vibe-zsh history list
+
+# Clear all history
+vibe-zsh history clear
+```
+
+**Note:** Don't run `vibe-zsh history` directly - use `vh` or `Ctrl+X H` for the interactive menu.
+
 ## Examples
 
 ### File Operations
@@ -220,9 +251,20 @@ Vibe-generated commands work with pipes and other shell features:
 | Key | Action |
 |-----|--------|
 | `Ctrl+G` | Generate command from natural language |
+| `Ctrl+X H` | Open interactive history menu |
 
-To change the keybinding, add this to your `.zshrc`:
+### Customizing Keybindings
+
+To change the command generation keybinding, add this to your `.zshrc`:
 
 ```bash
-bindkey '^X' vibe  # Use Ctrl+X instead
+bindkey '^X' vibe  # Use Ctrl+X instead of Ctrl+G
 ```
+
+To change the history keybinding:
+
+```bash
+export VIBE_HISTORY_KEY="^R"  # Use Ctrl+R for history
+```
+
+**Note:** Avoid using `^H` (Ctrl+H) as it conflicts with Backspace.

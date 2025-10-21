@@ -34,6 +34,9 @@ type Config struct {
 	StreamDelay          time.Duration
 	OSName               string
 	Shell                string
+	EnableHistory        bool
+	HistorySize          int
+	HistoryKey           string
 }
 
 func Load() *Config {
@@ -62,6 +65,9 @@ func Load() *Config {
 		StreamDelay:          getEnvDuration("VIBE_STREAM_DELAY", 20*time.Millisecond),
 		OSName:               getOSName(),
 		Shell:                getShell(),
+		EnableHistory:        getEnvBool("VIBE_ENABLE_HISTORY", true),
+		HistorySize:          getEnvInt("VIBE_HISTORY_SIZE", 100),
+		HistoryKey:           getEnv("VIBE_HISTORY_KEY", "^Xh"),
 	}
 }
 

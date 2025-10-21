@@ -107,6 +107,28 @@ export VIBE_INTERACTIVE=true
 
 When enabled, vibe will show the command and ask for confirmation before inserting it into your prompt.
 
+### Query History
+
+Control query history tracking (default: `true`):
+
+```bash
+export VIBE_ENABLE_HISTORY=false  # Disable history
+```
+
+Set maximum number of history entries (default: `100`):
+
+```bash
+export VIBE_HISTORY_SIZE=200
+```
+
+Customize the history keybinding (default: `^Xh` for Ctrl+X H):
+
+```bash
+export VIBE_HISTORY_KEY="^R"  # Use Ctrl+R instead
+```
+
+**Note:** Avoid using `^H` (Ctrl+H) as it conflicts with Backspace.
+
 ## Performance Configuration
 
 ### Cache Settings
@@ -208,6 +230,10 @@ When `VIBE_DEBUG_LOGS=true`, vibe will log:
 | `VIBE_USE_STRUCTURED_OUTPUT` | `true` | Use JSON schema for structured responses |
 | `VIBE_ENABLE_CACHE` | `true` | Enable response caching |
 | `VIBE_CACHE_TTL` | `24h` | Cache lifetime |
+| **History** | | |
+| `VIBE_ENABLE_HISTORY` | `true` | Enable query history tracking |
+| `VIBE_HISTORY_SIZE` | `100` | Maximum number of history entries |
+| `VIBE_HISTORY_KEY` | `^Xh` (Ctrl+X H) | Keybinding for history menu |
 | **Parsing & Retry** | | |
 | `VIBE_MAX_RETRIES` | `3` | Max retry attempts for failed parsing |
 | `VIBE_ENABLE_JSON_EXTRACTION` | `true` | Extract JSON from corrupted responses |
@@ -244,4 +270,7 @@ export VIBE_STREAM_DELAY=20ms
 export VIBE_INTERACTIVE=false
 export VIBE_ENABLE_CACHE=true
 export VIBE_CACHE_TTL=24h
+export VIBE_ENABLE_HISTORY=true
+export VIBE_HISTORY_SIZE=100
+export VIBE_HISTORY_KEY="^Xh"
 ```

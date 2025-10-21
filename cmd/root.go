@@ -11,6 +11,7 @@ import (
 
 	"github.com/skymoore/vibe-zsh/internal/client"
 	"github.com/skymoore/vibe-zsh/internal/config"
+	"github.com/skymoore/vibe-zsh/internal/history"
 	"github.com/skymoore/vibe-zsh/internal/logger"
 	"github.com/skymoore/vibe-zsh/internal/progress"
 	"github.com/skymoore/vibe-zsh/internal/streamer"
@@ -378,6 +379,15 @@ func generateCommand(query string) {
 
 	// Output only the command to stdout (this is what ZSH captures for the buffer)
 	fmt.Print(resp.Command)
+
+	// Save to history if enabled
+	if cfg.EnableHistory {
+		h, err := history.New(cfg.CacheDir, cfg.HistorySize)
+		if err == nil {
+			// Ignore errors when saving to history - don't fail the command
+			_ = h.Add(query, resp.Command)
+		}
+	}
 
 	updater.ShowUpdateNotification(appVersion)
 }
