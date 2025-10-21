@@ -19,16 +19,8 @@ function vibe() {
     # Everything else is explanations that were already displayed during streaming
     local cmd="${output%%$'\n'*}"
     
-    if [[ "$VIBE_INTERACTIVE" == "true" ]]; then
-      echo "\n---"
-      echo "$cmd"
-      echo "---"
-      read "confirm?Execute this command? [Y/n] "
-      if [[ "$confirm" =~ ^[Nn] ]]; then
-        zle -M "Command cancelled"
-        return
-      fi
-    fi
+    # Note: Interactive confirmation is now handled in the Go binary
+    # when VIBE_INTERACTIVE=true is set
     
     # Clear buffer and reset prompt
     BUFFER=""

@@ -11,6 +11,7 @@ import (
 
 	"github.com/skymoore/vibe-zsh/internal/client"
 	"github.com/skymoore/vibe-zsh/internal/config"
+	"github.com/skymoore/vibe-zsh/internal/confirm"
 	"github.com/skymoore/vibe-zsh/internal/history"
 	"github.com/skymoore/vibe-zsh/internal/logger"
 	"github.com/skymoore/vibe-zsh/internal/progress"
@@ -378,6 +379,19 @@ func generateCommand(query string) {
 
 	// Ensure all stderr output is flushed before writing to stdout
 	os.Stderr.Sync()
+
+	// If interactive mode is enabled, show confirmation prompt
+	if cfg.InteractiveMode {
+		confirmed, err := confirm.ShowConfirmation(resp.Command)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error showing confirmation: %v\n", err)
+			os.Exit(1)
+		}
+		if !confirmed {
+			// User cancelled, exit without outputting command
+			os.Exit(0)
+		}
+	}
 
 	// Output only the command to stdout (this is what ZSH captures for the buffer)
 	fmt.Print(resp.Command)
