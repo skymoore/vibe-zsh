@@ -39,9 +39,18 @@ var historyClearCmd = &cobra.Command{
 	},
 }
 
+var historyLastCmd = &cobra.Command{
+	Use:   "last",
+	Short: "Get the most recent query",
+	Run: func(cmd *cobra.Command, args []string) {
+		getLastQuery()
+	},
+}
+
 func init() {
 	historyCmd.AddCommand(historyListCmd)
 	historyCmd.AddCommand(historyClearCmd)
+	historyCmd.AddCommand(historyLastCmd)
 	rootCmd.AddCommand(historyCmd)
 }
 
@@ -69,7 +78,7 @@ func showInteractiveHistory() {
 		os.Exit(0)
 	}
 
-	command, err := history.ShowInteractive(entries)
+	result, err := history.ShowInteractive(entries)
 	if err != nil {
 		// If not in TTY, fall back to plain list
 		if err.Error() == "not in a TTY, use 'vibe-zsh history list' instead" {
@@ -80,9 +89,15 @@ func showInteractiveHistory() {
 		os.Exit(1)
 	}
 
-	if command != "" {
-		// Output the selected command to stdout
-		fmt.Print(command)
+	if result != nil && result.Value != "" {
+		// Output format: "REGENERATE:value", "EDIT:value", or just "value"
+		if result.Regenerate {
+			fmt.Print("REGENERATE:" + result.Value)
+		} else if result.EditQuery {
+			fmt.Print("EDIT:" + result.Value)
+		} else {
+			fmt.Print(result.Value)
+		}
 	}
 }
 
@@ -125,4 +140,31 @@ func clearHistory() {
 	}
 
 	fmt.Println("History cleared successfully.")
+}
+
+func getLastQuery() {
+	if !cfg.EnableHistory {
+		fmt.Fprintln(os.Stderr, "History is disabled. Set VIBE_ENABLE_HISTORY=true to enable.")
+		os.Exit(1)
+	}
+
+	h, err := history.New(cfg.CacheDir, cfg.HistorySize)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error initializing history: %v\n", err)
+		os.Exit(1)
+	}
+
+	entries, err := h.List()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading history: %v\n", err)
+		os.Exit(1)
+	}
+
+	if len(entries) == 0 {
+		fmt.Fprintln(os.Stderr, "No history entries found.")
+		os.Exit(1)
+	}
+
+	// Output the most recent query (first entry)
+	fmt.Print(entries[0].Query)
 }

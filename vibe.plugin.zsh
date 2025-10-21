@@ -54,19 +54,42 @@ bindkey '^G' vibe
 # History widget - shows interactive history menu
 function vibe-history-widget() {
   # Call vibe-zsh history command
-  local cmd=$("$VIBE_BINARY" history 2>/dev/null)
+  local output=$("$VIBE_BINARY" history 2>/dev/null)
   local exit_code=$?
   
-  if [[ $exit_code -eq 0 && -n "$cmd" ]]; then
-    # Clear buffer and reset prompt
-    BUFFER=""
-    CURSOR=0
-    zle reset-prompt
-    
-    # Set new buffer with selected command and move cursor to end
-    BUFFER="$cmd"
-    CURSOR=${#BUFFER}
-    zle redisplay
+  if [[ $exit_code -eq 0 && -n "$output" ]]; then
+    # Check if this is a regeneration request
+    if [[ "$output" == REGENERATE:* ]]; then
+      # Extract the query (remove REGENERATE: prefix)
+      local query="${output#REGENERATE:}"
+      
+      # Set the query in the buffer and trigger vibe
+      BUFFER="$query"
+      CURSOR=${#BUFFER}
+      zle reset-prompt
+      
+      # Call the vibe widget to regenerate
+      vibe
+    elif [[ "$output" == EDIT:* ]]; then
+      # Extract the query (remove EDIT: prefix)
+      local query="${output#EDIT:}"
+      
+      # Put query in buffer for editing
+      BUFFER="$query"
+      CURSOR=${#BUFFER}
+      zle reset-prompt
+      zle redisplay
+    else
+      # Normal command insertion
+      BUFFER=""
+      CURSOR=0
+      zle reset-prompt
+      
+      # Set new buffer with selected command and move cursor to end
+      BUFFER="$output"
+      CURSOR=${#BUFFER}
+      zle redisplay
+    fi
   fi
 }
 
@@ -77,6 +100,33 @@ zle -N vibe-history-widget
 local history_key="${VIBE_HISTORY_KEY:-^Xh}"
 bindkey "$history_key" vibe-history-widget
 
+# Regenerate last command widget
+# Fetches the most recent query and regenerates a new command
+function vibe-regenerate-last-widget() {
+  # Get the most recent query from history
+  local query=$("$VIBE_BINARY" history last 2>/dev/null)
+  local exit_code=$?
+  
+  if [[ $exit_code -eq 0 && -n "$query" ]]; then
+    # Set the query in the buffer and trigger vibe
+    BUFFER="$query"
+    CURSOR=${#BUFFER}
+    zle reset-prompt
+    
+    # Call the vibe widget to regenerate
+    vibe
+  else
+    zle -M "vibe: No history found"
+  fi
+}
+
+zle -N vibe-regenerate-last-widget
+
+# Configurable keybinding for regenerate last (default: Ctrl+X G)
+# Users can override with: export VIBE_REGENERATE_KEY="^Xg"
+local regenerate_key="${VIBE_REGENERATE_KEY:-^Xg}"
+bindkey "$regenerate_key" vibe-regenerate-last-widget
+
 # Shell function for direct command-line use
 # Usage: vh
 # 
@@ -85,14 +135,35 @@ bindkey "$history_key" vibe-history-widget
 # 
 # The selected command is inserted into your ZSH buffer using print -z,
 # making it appear on your command line ready for execution.
+# Press 'g' in the menu to regenerate a command from its original query.
 function vh() {
-  local cmd=$("$VIBE_BINARY" history 2>/dev/null)
+  local output=$("$VIBE_BINARY" history 2>/dev/null)
   local exit_code=$?
   
-  if [[ $exit_code -eq 0 && -n "$cmd" ]]; then
-    # Use print -z to add command to the editing buffer
-    # This makes it appear on the command line ready for execution
-    print -z "$cmd"
+  if [[ $exit_code -eq 0 && -n "$output" ]]; then
+    # Check if this is a regeneration request
+    if [[ "$output" == REGENERATE:* ]]; then
+      # Extract the query (remove REGENERATE: prefix)
+      local query="${output#REGENERATE:}"
+      
+      # Generate new command from the query
+      local new_cmd=$("$VIBE_BINARY" "$query")
+      if [[ -n "$new_cmd" ]]; then
+        # Extract only the first line (the actual command)
+        new_cmd="${new_cmd%%$'\n'*}"
+        print -z "$new_cmd"
+      fi
+    elif [[ "$output" == EDIT:* ]]; then
+      # Extract the query (remove EDIT: prefix)
+      local query="${output#EDIT:}"
+      
+      # Put query in buffer for editing
+      print -z "$query"
+    else
+      # Use print -z to add command to the editing buffer
+      # This makes it appear on the command line ready for execution
+      print -z "$output"
+    fi
   fi
 }
 

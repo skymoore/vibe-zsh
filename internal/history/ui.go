@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -23,6 +24,12 @@ var (
 
 type item struct {
 	entry Entry
+}
+
+type SelectionResult struct {
+	Value      string
+	Regenerate bool
+	EditQuery  bool
 }
 
 func (i item) FilterValue() string { return i.entry.Query }
@@ -60,9 +67,11 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 }
 
 type model struct {
-	list     list.Model
-	choice   string
-	quitting bool
+	list       list.Model
+	choice     string
+	regenerate bool
+	editQuery  bool
+	quitting   bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -87,6 +96,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.choice = i.entry.Command
 			}
 			return m, tea.Quit
+
+		case "g":
+			i, ok := m.list.SelectedItem().(item)
+			if ok {
+				m.choice = i.entry.Query
+				m.regenerate = true
+			}
+			return m, tea.Quit
+
+		case "v":
+			i, ok := m.list.SelectedItem().(item)
+			if ok {
+				m.choice = i.entry.Query
+				m.editQuery = true
+			}
+			return m, tea.Quit
+
+		case "a", "home":
+			m.list.Select(0)
+			return m, nil
+
+		case "e", "end":
+			m.list.Select(len(m.list.Items()) - 1)
+			return m, nil
 		}
 	}
 
@@ -105,9 +138,9 @@ func (m model) View() string {
 	return "\n" + m.list.View()
 }
 
-func ShowInteractive(entries []Entry) (string, error) {
+func ShowInteractive(entries []Entry) (*SelectionResult, error) {
 	if len(entries) == 0 {
-		return "", fmt.Errorf("no history entries found")
+		return nil, fmt.Errorf("no history entries found")
 	}
 
 	// Open /dev/tty directly for TUI interaction
@@ -115,7 +148,7 @@ func ShowInteractive(entries []Entry) (string, error) {
 	tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
 	if err != nil {
 		// If we can't open /dev/tty, fall back to plain list
-		return "", fmt.Errorf("not in a TTY, use 'vibe-zsh history list' instead")
+		return nil, fmt.Errorf("not in a TTY, use 'vibe-zsh history list' instead")
 	}
 	defer tty.Close()
 
@@ -135,6 +168,48 @@ func ShowInteractive(entries []Entry) (string, error) {
 	l.Styles.PaginationStyle = paginationStyle
 	l.Styles.HelpStyle = helpStyle
 
+	// Add custom help
+	l.AdditionalShortHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			key.NewBinding(
+				key.WithKeys("enter"),
+				key.WithHelp("enter", "use command"),
+			),
+			key.NewBinding(
+				key.WithKeys("g"),
+				key.WithHelp("g", "regenerate"),
+			),
+			key.NewBinding(
+				key.WithKeys("v"),
+				key.WithHelp("v", "edit query"),
+			),
+		}
+	}
+	l.AdditionalFullHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			key.NewBinding(
+				key.WithKeys("enter"),
+				key.WithHelp("enter", "use generated command"),
+			),
+			key.NewBinding(
+				key.WithKeys("g"),
+				key.WithHelp("g", "regenerate from query"),
+			),
+			key.NewBinding(
+				key.WithKeys("v"),
+				key.WithHelp("v", "edit query in buffer"),
+			),
+			key.NewBinding(
+				key.WithKeys("a", "home"),
+				key.WithHelp("a/home", "go to start"),
+			),
+			key.NewBinding(
+				key.WithKeys("e", "end"),
+				key.WithHelp("e/end", "go to end"),
+			),
+		}
+	}
+
 	m := model{list: l}
 
 	// Use /dev/tty for both input and output
@@ -143,14 +218,20 @@ func ShowInteractive(entries []Entry) (string, error) {
 	p := tea.NewProgram(m, tea.WithInput(tty), tea.WithOutput(tty), tea.WithAltScreen())
 	finalModel, err := p.Run()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if m, ok := finalModel.(model); ok {
-		return m.choice, nil
+		if m.choice != "" {
+			return &SelectionResult{
+				Value:      m.choice,
+				Regenerate: m.regenerate,
+				EditQuery:  m.editQuery,
+			}, nil
+		}
 	}
 
-	return "", nil
+	return nil, nil
 }
 
 func FormatPlainList(entries []Entry) string {

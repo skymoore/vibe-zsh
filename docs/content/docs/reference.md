@@ -489,6 +489,36 @@ Both methods open the same interactive menu and insert the selected command into
 
 ---
 
+#### VIBE_REGENERATE_KEY
+
+**Type:** String  
+**Default:** `^Xg` (Ctrl+X G)  
+**Description:** Keybinding to instantly regenerate a new command from the most recent query without opening the history menu.
+
+**Examples:**
+
+```bash 
+# Default (Ctrl+X G)
+export VIBE_REGENERATE_KEY="^Xg"
+
+# Use Alt+R instead
+export VIBE_REGENERATE_KEY="^[r"
+
+# Use Ctrl+R (if not using for history)
+export VIBE_REGENERATE_KEY="^R"
+```
+
+**Format:** ZSH keybinding notation
+- `^Xg` = Ctrl+X followed by G
+- `^[r` = Alt+R
+- `^R` = Ctrl+R
+
+**Warning:** Avoid `^H` (Ctrl+H) as it conflicts with Backspace.
+
+**Use Case:** Quickly try a different variation of your last command without navigating through the history menu.
+
+---
+
 ### Cache Configuration
 
 #### VIBE_ENABLE_CACHE
@@ -610,6 +640,7 @@ export VIBE_INTERACTIVE=false
 export VIBE_ENABLE_HISTORY=true
 export VIBE_HISTORY_SIZE=100
 export VIBE_HISTORY_KEY="^Xh"
+export VIBE_REGENERATE_KEY="^Xg"
 
 # Cache Configuration
 export VIBE_ENABLE_CACHE=true
@@ -702,7 +733,8 @@ export VIBE_BINARY="/usr/local/bin/vibe"
 |----------|------|---------|-------------|
 | `VIBE_ENABLE_HISTORY` | Boolean | `true` | Enable history tracking |
 | `VIBE_HISTORY_SIZE` | Integer | `100` | Max history entries |
-| `VIBE_HISTORY_KEY` | String | `^Xh` | History keybinding |
+| `VIBE_HISTORY_KEY` | String | `^Xh` | History menu keybinding |
+| `VIBE_REGENERATE_KEY` | String | `^Xg` | Regenerate last keybinding |
 
 ### Cache Settings
 

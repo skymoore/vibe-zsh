@@ -37,6 +37,7 @@ type Config struct {
 	EnableHistory        bool
 	HistorySize          int
 	HistoryKey           string
+	RegenerateKey        string
 }
 
 func Load() *Config {
@@ -68,6 +69,7 @@ func Load() *Config {
 		EnableHistory:        getEnvBool("VIBE_ENABLE_HISTORY", true),
 		HistorySize:          getEnvInt("VIBE_HISTORY_SIZE", 100),
 		HistoryKey:           getEnv("VIBE_HISTORY_KEY", "^Xh"),
+		RegenerateKey:        getEnv("VIBE_REGENERATE_KEY", "^Xg"),
 	}
 }
 

@@ -25,12 +25,25 @@ Press `Ctrl+X` then `H` to open the interactive history menu.
 
 Type `vh` and press Enter to open the interactive history menu.
 
+### Quick Regenerate
+
+Press `Ctrl+X` then `G` to instantly regenerate a new command from your most recent query without opening the menu. This is useful when you want to quickly try a different variation of your last command.
+
 ### History Menu Features
 
-- **Navigate** with arrow keys
+- **Navigate** with arrow keys (or `j`/`k`)
 - **Search** by pressing `/` to filter entries
-- **Select** by pressing `Enter` - the command is inserted into your buffer
-- **Cancel** by pressing `Esc` or `q`
+- **Select** by pressing `Enter` - inserts the generated command into your buffer
+- **Regenerate** by pressing `G` - generates a new command from the original query
+- **Edit Query** by pressing `V` - puts the original query in your buffer for editing
+- **Jump to Start** by pressing `A` or `Home`
+- **Jump to End** by pressing `E` or `End`
+- **Cancel** by pressing `Esc` or `Q`
+
+**Use Cases:**
+- **Enter**: Use the exact command that was generated before
+- **G**: Get a fresh variation of the same query (might produce different results)
+- **V**: Modify the original query before generating a new command
 
 ### History Management
 
@@ -252,6 +265,7 @@ Vibe-generated commands work with pipes and other shell features:
 |-----|--------|
 | `Ctrl+G` | Generate command from natural language |
 | `Ctrl+X H` | Open interactive history menu |
+| `Ctrl+X G` | Regenerate most recent command |
 
 ### Customizing Keybindings
 
@@ -261,10 +275,11 @@ To change the command generation keybinding, add this to your `.zshrc`:
 bindkey '^X' vibe  # Use Ctrl+X instead of Ctrl+G
 ```
 
-To change the history keybinding:
+To change the history keybindings:
 
 ```bash
-export VIBE_HISTORY_KEY="^R"  # Use Ctrl+R for history
+export VIBE_HISTORY_KEY="^R"      # Use Ctrl+R for history menu
+export VIBE_REGENERATE_KEY="^[r"  # Use Alt+R for quick regenerate
 ```
 
 **Note:** Avoid using `^H` (Ctrl+H) as it conflicts with Backspace.

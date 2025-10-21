@@ -145,10 +145,18 @@ Access your query history in two ways:
 Both methods open an interactive menu where you can:
 - Browse previous queries with arrow keys
 - Search with `/` (filter mode)
-- Press `Enter` to insert the selected command into your buffer
-- Press `Esc` or `q` to cancel
+- Press `Enter` to insert the generated command into your buffer
+- Press `G` to regenerate a new command from the original query
+- Press `V` to edit the original query in your buffer
+- Press `A` or `Home` to jump to the first entry
+- Press `E` or `End` to jump to the last entry
+- Press `Esc` or `Q` to cancel
 
 The selected command appears on your command line, ready to execute!
+
+**Quick Regenerate:**
+
+Press `Ctrl+X` then `G` to instantly regenerate a new command from your most recent query without opening the menu.
 
 **Note**: Don't run `vibe-zsh history` or `./vibe history` directly - use `vh` or the keybinding instead.
 
@@ -253,7 +261,8 @@ export VIBE_AUTO_UPDATE=false
 
 **Customize History Keybinding:**
 ```bash
-export VIBE_HISTORY_KEY="^R"   # Use Ctrl+R instead
+export VIBE_HISTORY_KEY="^R"      # Use Ctrl+R for history menu
+export VIBE_REGENERATE_KEY="^[r"  # Use Alt+R for quick regenerate
 # Note: Avoid ^H (Ctrl+H) as it conflicts with Backspace
 ```
 
@@ -294,6 +303,7 @@ export VIBE_ENABLE_HISTORY=false
 | `VIBE_ENABLE_HISTORY` | `true` | Enable query history tracking |
 | `VIBE_HISTORY_SIZE` | `100` | Maximum number of history entries |
 | `VIBE_HISTORY_KEY` | `^Xh` (Ctrl+X H) | Keybinding for history menu |
+| `VIBE_REGENERATE_KEY` | `^Xg` (Ctrl+X G) | Keybinding to regenerate last command |
 | **Updates & Debugging** | | |
 | `VIBE_AUTO_UPDATE` | `true` | Enable auto-update checks |
 | `VIBE_UPDATE_CHECK_INTERVAL` | `7d` | How often to check for updates |

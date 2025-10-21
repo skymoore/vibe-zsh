@@ -121,10 +121,11 @@ Set maximum number of history entries (default: `100`):
 export VIBE_HISTORY_SIZE=200
 ```
 
-Customize the history keybinding (default: `^Xh` for Ctrl+X H):
+Customize the history keybindings:
 
 ```bash
-export VIBE_HISTORY_KEY="^R"  # Use Ctrl+R instead
+export VIBE_HISTORY_KEY="^R"      # Use Ctrl+R for history menu (default: ^Xh)
+export VIBE_REGENERATE_KEY="^[r"  # Use Alt+R for quick regenerate (default: ^Xg)
 ```
 
 **Note:** Avoid using `^H` (Ctrl+H) as it conflicts with Backspace.
@@ -234,6 +235,7 @@ When `VIBE_DEBUG_LOGS=true`, vibe will log:
 | `VIBE_ENABLE_HISTORY` | `true` | Enable query history tracking |
 | `VIBE_HISTORY_SIZE` | `100` | Maximum number of history entries |
 | `VIBE_HISTORY_KEY` | `^Xh` (Ctrl+X H) | Keybinding for history menu |
+| `VIBE_REGENERATE_KEY` | `^Xg` (Ctrl+X G) | Keybinding to regenerate last command |
 | **Parsing & Retry** | | |
 | `VIBE_MAX_RETRIES` | `3` | Max retry attempts for failed parsing |
 | `VIBE_ENABLE_JSON_EXTRACTION` | `true` | Extract JSON from corrupted responses |
@@ -273,4 +275,5 @@ export VIBE_CACHE_TTL=24h
 export VIBE_ENABLE_HISTORY=true
 export VIBE_HISTORY_SIZE=100
 export VIBE_HISTORY_KEY="^Xh"
+export VIBE_REGENERATE_KEY="^Xg"
 ```
