@@ -42,9 +42,10 @@ else
     exit 1
 fi
 
-LATEST_RELEASE=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+LATEST_TAG=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+LATEST_RELEASE="${LATEST_TAG#v}"  # Strip 'v' prefix for archive filenames
 
-if [ -z "$LATEST_RELEASE" ]; then
+if [ -z "$LATEST_TAG" ]; then
     echo "⚠️  No release found, cloning repository..."
     git clone "https://github.com/${REPO}.git" vibe-zsh
     cd vibe-zsh
@@ -62,10 +63,10 @@ if [ -z "$LATEST_RELEASE" ]; then
     cp vibe.plugin.zsh "$INSTALL_DIR/"
     cp _vibe "$INSTALL_DIR/"
 else
-    echo "📥 Downloading release ${LATEST_RELEASE}..."
+    echo "📥 Downloading release ${LATEST_TAG}..."
     ARCHIVE="vibe-zsh-${LATEST_RELEASE}-${PLATFORM}.tar.gz"
-    DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_RELEASE}/${ARCHIVE}"
-    CHECKSUMS_URL="https://github.com/${REPO}/releases/download/${LATEST_RELEASE}/checksums.txt"
+    DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_TAG}/${ARCHIVE}"
+    CHECKSUMS_URL="https://github.com/${REPO}/releases/download/${LATEST_TAG}/checksums.txt"
     
     if ! curl -fsSL "$DOWNLOAD_URL" -o "${ARCHIVE}"; then
         echo "❌ Failed to download archive"
