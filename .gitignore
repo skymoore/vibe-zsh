@@ -4,3 +4,6 @@ vibe-*
 *.swo
 *~
 .DS_Store
+*.p8
+*.cer
+*.b64

@@ -9,35 +9,17 @@ permissions:
   contents: write
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25.3'
-
-      - name: Install GoReleaser
-        run: go install github.com/goreleaser/goreleaser/v2@latest
-
-      - name: Build Linux artifacts
-        run: ~/go/bin/goreleaser build --clean --skip=validate --id vibe --single-target
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-artifacts
-          path: dist/*
-
-  build-macos:
+  release:
     runs-on: macos-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+      APPLE_CERT_B64: ${{ secrets.APPLE_CERT_B64 }}
+      APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_NOTARY_KEY_B64: ${{ secrets.APPLE_NOTARY_KEY_B64 }}
+      APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
+      APPLE_NOTARY_KEY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_KEY_ISSUER_ID }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,61 +42,11 @@ jobs:
           security unlock-keychain -p temp temp.keychain
           security import cert.p12 -k temp.keychain -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k temp temp.keychain
-        env:
-          APPLE_CERT_B64: ${{ secrets.APPLE_CERT_B64 }}
-          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+          rm cert.p12
 
-      - name: Build and Sign macOS artifacts
-        run: goreleaser build --clean --skip=validate --id vibe --single-target
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_CERT_B64: ${{ secrets.APPLE_CERT_B64 }}
-          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_NOTARY_KEY_B64: ${{ secrets.APPLE_NOTARY_KEY_B64 }}
-          APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
-          APPLE_NOTARY_KEY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_KEY_ISSUER_ID }}
+      - name: Run GoReleaser
+        run: goreleaser release --clean
 
       - name: Cleanup Keychain
         if: always()
         run: security delete-keychain temp.keychain
-
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-artifacts
-          path: dist/*
-
-  release:
-    runs-on: ubuntu-latest
-    needs: [build-linux, build-macos]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-artifacts
-          path: dist/linux
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos-artifacts
-          path: dist/macos
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25.3'
-
-      - name: Run GoReleaser release
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          distribution: goreleaser
-          version: v2
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
