@@ -45,7 +45,7 @@ jobs:
           rm cert.p12
 
       - name: Run GoReleaser
-        run: goreleaser release --clean --skip=validate --id vibe
+        run: goreleaser release --clean
 
       - name: Cleanup Keychain
         if: always()

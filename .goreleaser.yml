@@ -73,10 +73,6 @@ homebrew_casks:
 
       Use Ctrl+G to transform natural language into commands!
 
-signs:
-  - artifacts: all
-    args: ["--keychain", "temp.keychain", "--timestamp"]
-
 notarize:
   macos:
     - enabled: true
