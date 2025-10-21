@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 var (
@@ -123,6 +124,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.list.SetWidth(msg.Width)
+		m.list.SetHeight(msg.Height - 2) // Subtract 2 for margins
 		return m, nil
 
 	case tea.KeyMsg:
@@ -183,6 +185,9 @@ func ShowInteractive(entries []Entry) (*SelectionResult, error) {
 	if len(entries) == 0 {
 		return nil, fmt.Errorf("no history entries found")
 	}
+
+	// Force color output for lipgloss
+	lipgloss.SetColorProfile(termenv.TrueColor)
 
 	// Open /dev/tty directly for TUI interaction
 	// This allows the TUI to work even when stdout is captured (e.g., in command substitution)
