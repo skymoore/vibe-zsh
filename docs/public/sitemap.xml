@@ -1,1 +1,25 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url><loc>https://vibe-zsh.dev/docs/installation/</loc></url><url><loc>https://vibe-zsh.dev/docs/configuration/</loc></url><url><loc>https://vibe-zsh.dev/docs/usage/</loc></url><url><loc>https://vibe-zsh.dev/docs/troubleshooting/</loc></url><url><loc>https://vibe-zsh.dev/docs/api/</loc></url><url><loc>https://vibe-zsh.dev/docs/reference/</loc></url><url><loc>https://vibe-zsh.dev/categories/</loc></url><url><loc>https://vibe-zsh.dev/docs/</loc></url><url><loc>https://vibe-zsh.dev/tags/</loc></url><url><loc>https://vibe-zsh.dev/</loc></url></urlset>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://localhost:1313/docs/installation/</loc>
+  </url><url>
+    <loc>http://localhost:1313/docs/configuration/</loc>
+  </url><url>
+    <loc>http://localhost:1313/docs/usage/</loc>
+  </url><url>
+    <loc>http://localhost:1313/docs/troubleshooting/</loc>
+  </url><url>
+    <loc>http://localhost:1313/docs/api/</loc>
+  </url><url>
+    <loc>http://localhost:1313/docs/reference/</loc>
+  </url><url>
+    <loc>http://localhost:1313/categories/</loc>
+  </url><url>
+    <loc>http://localhost:1313/docs/</loc>
+  </url><url>
+    <loc>http://localhost:1313/tags/</loc>
+  </url><url>
+    <loc>http://localhost:1313/</loc>
+  </url>
+</urlset>

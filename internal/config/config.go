@@ -4,12 +4,14 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/skymoore/vibe-zsh/internal/progress"
 )
 
 type Config struct {
+	Provider             string
 	APIURL               string
 	APIKey               string
 	Model                string
@@ -41,8 +43,10 @@ type Config struct {
 }
 
 func Load() *Config {
+	apiURL := getEnv("VIBE_API_URL", "http://localhost:11434/v1")
 	return &Config{
-		APIURL:               getEnv("VIBE_API_URL", "http://localhost:11434/v1"),
+		Provider:             getEnv("VIBE_PROVIDER", inferProvider(apiURL)),
+		APIURL:               apiURL,
 		APIKey:               getEnv("VIBE_API_KEY", ""),
 		Model:                getEnv("VIBE_MODEL", "llama3:8b"),
 		Temperature:          getEnvFloat("VIBE_TEMPERATURE", 0.2),
@@ -70,6 +74,40 @@ func Load() *Config {
 		HistorySize:          getEnvInt("VIBE_HISTORY_SIZE", 100),
 		HistoryKey:           getEnv("VIBE_HISTORY_KEY", "^Xh"),
 		RegenerateKey:        getEnv("VIBE_REGENERATE_KEY", "^Xg"),
+	}
+}
+
+// inferProvider guesses the gollm provider name from the configured API URL.
+// This keeps existing OpenAI-compatible setups working without requiring users
+// to set VIBE_PROVIDER. Set VIBE_PROVIDER explicitly to override (e.g. "anthropic").
+func inferProvider(apiURL string) string {
+	host := strings.ToLower(apiURL)
+	switch {
+	case strings.Contains(host, "openrouter.ai"):
+		return "openrouter"
+	case strings.Contains(host, "api.anthropic.com"):
+		return "anthropic"
+	case strings.Contains(host, "api.groq.com"):
+		return "groq"
+	case strings.Contains(host, "api.openai.com"):
+		return "openai"
+	case strings.Contains(host, "openrouter"):
+		return "openrouter"
+	case strings.Contains(host, "deepseek"):
+		return "deepseek"
+	case strings.Contains(host, "generativelanguage.googleapis.com"):
+		return "google-openai"
+	case strings.Contains(host, ":11434"):
+		return "ollama"
+	case strings.Contains(host, ":1234"):
+		// LM Studio default port; the lmstudio provider honors a custom endpoint.
+		return "lmstudio"
+	default:
+		// Default to the OpenAI-compatible dialect. NOTE: gollm's "openai"
+		// provider targets api.openai.com directly. For other OpenAI-compatible
+		// gateways, set VIBE_PROVIDER explicitly (e.g. "lmstudio", "vllm",
+		// "groq", "openrouter", "deepseek").
+		return "openai"
 	}
 }
 

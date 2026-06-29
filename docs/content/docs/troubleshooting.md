@@ -80,7 +80,7 @@ weight: 4
 
 1. **Try a different/better model:**
    ```bash
-   export VIBE_MODEL="gpt-4"  # Or other capable models
+   export VIBE_MODEL="gpt-4o"  # Or other capable models
    ```
 
 2. **Make your query more specific:**

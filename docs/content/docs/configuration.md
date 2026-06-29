@@ -8,9 +8,29 @@ All configuration is done through environment variables in your `~/.zshrc`. All 
 
 ## Provider Configuration
 
-### Local LLM (Ollama) - Default
+vibe-zsh uses [gollm](https://github.com/teilomillet/gollm) to talk to each
+provider natively. There are two kinds of provider:
+
+- **Hosted providers** (`openai`, `anthropic`, `groq`, `openrouter`, `deepseek`,
+  `google-openai`, `mistral`, `cohere`) have a fixed endpoint built in. Set
+  `VIBE_PROVIDER`, `VIBE_API_KEY`, and `VIBE_MODEL` — do **not** set `VIBE_API_URL`.
+- **Local providers** (`ollama`, `lmstudio`, `vllm`) run on your machine. Set
+  `VIBE_PROVIDER` and point `VIBE_API_URL` at the local server; no API key needed.
+
+Select a provider with `VIBE_PROVIDER`. If you don't set it, vibe infers the
+provider from `VIBE_API_URL` (mainly to keep older configs working). **Setting
+`VIBE_PROVIDER` explicitly is the recommended approach.**
+
+{{< callout type="warning" >}}
+The default `VIBE_MODEL` is `llama3:8b` (chosen for the default Ollama setup).
+Always set `VIBE_MODEL` when you use a hosted provider, or requests will ask for
+a model that doesn't exist there.
+{{< /callout >}}
+
+### Ollama (local) - Default
 
 ```bash
+export VIBE_PROVIDER="ollama"
 export VIBE_API_URL="http://localhost:11434/v1"
 export VIBE_MODEL="llama3:8b"
 ```
@@ -20,33 +40,54 @@ This is the default configuration. If you have Ollama running locally, vibe will
 ### OpenAI
 
 ```bash
-export VIBE_API_URL="https://api.openai.com/v1"
+export VIBE_PROVIDER="openai"
 export VIBE_API_KEY="sk-..."
-export VIBE_MODEL="gpt-4"
+export VIBE_MODEL="gpt-4o"
+# No VIBE_API_URL needed — the openai provider always targets api.openai.com.
 ```
 
-### Anthropic (via OpenRouter)
+### Anthropic
 
 ```bash
-export VIBE_API_URL="https://openrouter.ai/api/v1"
-export VIBE_API_KEY="sk-or-..."
-export VIBE_MODEL="anthropic/claude-3.5-sonnet"
-```
-
-### LM Studio
-
-```bash
-export VIBE_API_URL="http://localhost:1234/v1"
-export VIBE_MODEL="local-model"
+export VIBE_PROVIDER="anthropic"
+export VIBE_API_KEY="sk-ant-..."
+export VIBE_MODEL="claude-3-5-sonnet-20241022"
 ```
 
 ### Groq
 
 ```bash
-export VIBE_API_URL="https://api.groq.com/openai/v1"
+export VIBE_PROVIDER="groq"
 export VIBE_API_KEY="gsk_..."
 export VIBE_MODEL="llama-3.1-70b-versatile"
 ```
+
+### OpenRouter
+
+```bash
+export VIBE_PROVIDER="openrouter"
+export VIBE_API_KEY="sk-or-..."
+export VIBE_MODEL="anthropic/claude-3.5-sonnet"
+```
+
+### LM Studio (local)
+
+```bash
+export VIBE_PROVIDER="lmstudio"
+export VIBE_API_URL="http://localhost:1234/v1"
+export VIBE_MODEL="local-model"
+```
+
+{{< callout type="info" >}}
+**Validation:** gollm checks your configuration when vibe starts. Hosted
+providers validate the API key format up front (e.g. Anthropic keys must start
+with `sk-ant-`), and local providers must already be running and reachable.
+
+**Custom OpenAI-compatible gateways:** the `openai` provider always points at
+`api.openai.com` and cannot be redirected via `VIBE_API_URL`. To use an
+OpenAI-compatible endpoint that isn't OpenAI itself, set `VIBE_PROVIDER` to
+`lmstudio` or `vllm` and point `VIBE_API_URL` at your gateway.
+{{< /callout >}}
 
 ## Display Configuration
 
@@ -164,7 +205,7 @@ Set request timeout (default: `30s`):
 export VIBE_TIMEOUT=60s
 ```
 
-Set generation temperature (default: `0.7`):
+Set generation temperature (default: `0.2`):
 
 ```bash
 export VIBE_TEMPERATURE=0.3
@@ -221,9 +262,10 @@ When `VIBE_DEBUG_LOGS=true`, vibe will log:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | **API Configuration** | | |
-| `VIBE_API_URL` | `http://localhost:11434/v1` | API endpoint URL |
-| `VIBE_API_KEY` | `""` | API key (if required) |
-| `VIBE_MODEL` | `llama3:8b` | Model to use |
+| `VIBE_PROVIDER` | _(inferred from `VIBE_API_URL`)_ | LLM provider. Hosted: `openai`, `anthropic`, `groq`, `openrouter`, `deepseek`, `google-openai`, `mistral`, `cohere`. Local: `ollama`, `lmstudio`, `vllm`. Recommended to set explicitly. |
+| `VIBE_API_URL` | `http://localhost:11434/v1` | Endpoint URL for **local** providers only. Hosted providers ignore this. |
+| `VIBE_API_KEY` | `""` | API key. Required for hosted providers; ignored by local providers. |
+| `VIBE_MODEL` | `llama3:8b` | Model to use. Set this for hosted providers — the default only suits Ollama. |
 | `VIBE_TEMPERATURE` | `0.2` | Generation temperature (0.0-2.0) |
 | `VIBE_MAX_TOKENS` | `1000` | Max response tokens |
 | `VIBE_TIMEOUT` | `30s` | Request timeout |
@@ -268,9 +310,9 @@ Here's a complete example configuration in your `~/.zshrc`:
 
 ```bash
 # vibe configuration
-export VIBE_API_URL="https://api.openai.com/v1"
+export VIBE_PROVIDER="openai"
 export VIBE_API_KEY="sk-..."
-export VIBE_MODEL="gpt-4"
+export VIBE_MODEL="gpt-4o"
 export VIBE_TEMPERATURE=0.2
 export VIBE_SHOW_EXPLANATION=true
 export VIBE_SHOW_PROGRESS=true

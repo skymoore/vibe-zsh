@@ -44,8 +44,8 @@ layout: hextra-home
     subtitle="Typewriter effect with progress indicators. Watch commands appear in real-time."
   >}}
   {{< hextra/feature-card
-    title="Universal Compatibility"
-    subtitle="Works with Ollama, LM Studio, OpenAI, Claude, Groq, and any OpenAI-compatible API."
+    title="Multi-Provider"
+    subtitle="Native support for OpenAI, Anthropic, Groq, OpenRouter, Ollama, LM Studio, and more."
   >}}
   {{< hextra/feature-card
     title="Safe by Default"

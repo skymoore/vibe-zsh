@@ -1,6 +1,6 @@
 # vibe 🌊
 
-Transform natural language into shell commands using AI. Works with any OpenAI-compatible API.
+Transform natural language into shell commands using AI. Works natively with OpenAI, Anthropic, Groq, OpenRouter, Ollama, LM Studio, and more.
 
 ```bash
 # Type your intent in natural language
@@ -21,11 +21,11 @@ docker ps -a
 - 🖥️ **OS-aware generation** - Commands that work on YOUR system (macOS/Linux/Windows)
 - ⚡ **Lightning fast** - Cached responses are 100-400x faster
 - 🎬 **Streaming output** - Typewriter effect with progress indicators
-- 🔌 **Universal compatibility** - Works with Ollama, LM Studio, OpenAI, Claude, and more
+- 🔌 **Multi-provider** - Native support for OpenAI, Anthropic, Groq, OpenRouter, Ollama, LM Studio, and more
 - 🛡️ **Safe by default** - Preview commands before execution
 - 📚 **Learn while you work** - Inline explanations for every command
 - 📜 **Query history** - Interactive menu to browse and re-run previous queries
-- 🎯 **Zero dependencies** - Single compiled binary
+- 🎯 **Single binary** - One compiled binary, no runtime dependencies to install
 
 ## Installation
 
@@ -89,42 +89,83 @@ This script downloads the latest release and installs it to `~/.oh-my-zsh/custom
 
 ## Configuration
 
-Add these to your `~/.zshrc` (all optional):
+Add these to your `~/.zshrc` (all optional).
 
-### Local LLM (Ollama)
-```bash
-export VIBE_API_URL="http://localhost:11434/v1"
-export VIBE_MODEL="llama3:8b"
-```
+vibe-zsh uses [gollm](https://github.com/teilomillet/gollm) to talk to each
+provider natively. There are two kinds of provider:
+
+- **Hosted providers** (`openai`, `anthropic`, `groq`, `openrouter`, `deepseek`,
+  `google-openai`, `mistral`, `cohere`) have a fixed endpoint built in. You only
+  need to choose the provider, set `VIBE_API_KEY`, and pick a `VIBE_MODEL` — you
+  do **not** set `VIBE_API_URL`.
+- **Local providers** (`ollama`, `lmstudio`, `vllm`) run on your machine. Set
+  `VIBE_API_URL` to point at the local server; no API key is required.
+
+Select a provider with `VIBE_PROVIDER`. If you don't set it, vibe infers the
+provider from `VIBE_API_URL` (e.g. an `openrouter.ai` or `:11434` URL), which is
+mainly there to keep older configs working. **Setting `VIBE_PROVIDER` explicitly
+is the recommended approach.**
+
+> The default `VIBE_MODEL` is `llama3:8b` (chosen for the default Ollama setup).
+> Always set `VIBE_MODEL` when you use a hosted provider, or requests will ask
+> for a model that doesn't exist there.
 
 ### OpenAI
 ```bash
-export VIBE_API_URL="https://api.openai.com/v1"
+export VIBE_PROVIDER="openai"
 export VIBE_API_KEY="sk-..."
-export VIBE_MODEL="gpt-4"
+export VIBE_MODEL="gpt-4o"
+# No VIBE_API_URL needed — the openai provider always targets api.openai.com.
 ```
 
-### Anthropic (via OpenRouter)
+### Anthropic
 ```bash
-export VIBE_API_URL="https://openrouter.ai/api/v1"
+export VIBE_PROVIDER="anthropic"
+export VIBE_API_KEY="sk-ant-..."
+export VIBE_MODEL="claude-3-5-sonnet-20241022"
+```
+
+### Groq
+```bash
+export VIBE_PROVIDER="groq"
+export VIBE_API_KEY="gsk_..."
+export VIBE_MODEL="llama-3.1-70b-versatile"
+```
+
+### OpenRouter
+```bash
+export VIBE_PROVIDER="openrouter"
 export VIBE_API_KEY="sk-or-..."
 export VIBE_MODEL="anthropic/claude-3.5-sonnet"
 ```
 
-### Other Providers
-
-**LM Studio:**
+### Ollama (local)
 ```bash
+export VIBE_PROVIDER="ollama"
+export VIBE_API_URL="http://localhost:11434/v1"
+export VIBE_MODEL="llama3:8b"
+# Ollama must be running; no API key required.
+```
+
+### LM Studio (local)
+```bash
+export VIBE_PROVIDER="lmstudio"
 export VIBE_API_URL="http://localhost:1234/v1"
 export VIBE_MODEL="local-model"
+# LM Studio must be running and reachable when vibe starts.
 ```
 
-**Groq:**
-```bash
-export VIBE_API_URL="https://api.groq.com/openai/v1"
-export VIBE_API_KEY="gsk_..."
-export VIBE_MODEL="llama-3.1-70b-versatile"
-```
+> **Note on validation:** gollm checks your configuration when vibe starts.
+> Hosted providers validate the API key format up front (for example, Anthropic
+> keys must start with `sk-ant-`), and local providers must already be running
+> and reachable. If a provider is misconfigured, vibe reports an actionable
+> error on the first query rather than silently failing.
+>
+> **Custom OpenAI-compatible gateways:** the `openai` provider always points at
+> `api.openai.com`, so it can't be redirected to a self-hosted gateway via
+> `VIBE_API_URL`. To use an OpenAI-compatible endpoint that isn't OpenAI itself,
+> set `VIBE_PROVIDER` to `lmstudio` or `vllm` and point `VIBE_API_URL` at your
+> gateway.
 
 ## Usage
 
@@ -276,9 +317,10 @@ export VIBE_ENABLE_HISTORY=false
 | Variable | Default | Description |
 |----------|---------|-------------|
 | **API Configuration** | | |
-| `VIBE_API_URL` | `http://localhost:11434/v1` | API endpoint URL |
-| `VIBE_API_KEY` | `""` | API key (if required) |
-| `VIBE_MODEL` | `llama3:8b` | Model to use |
+| `VIBE_PROVIDER` | _(inferred from `VIBE_API_URL`)_ | LLM provider. Hosted: `openai`, `anthropic`, `groq`, `openrouter`, `deepseek`, `google-openai`, `mistral`, `cohere`. Local: `ollama`, `lmstudio`, `vllm`. Recommended to set explicitly. |
+| `VIBE_API_URL` | `http://localhost:11434/v1` | Endpoint URL for **local** providers only (`ollama`, `vllm`). Hosted providers ignore this and use their fixed endpoints. |
+| `VIBE_API_KEY` | `""` | API key. Required for hosted providers; ignored by local providers. |
+| `VIBE_MODEL` | `llama3:8b` | Model to use. Set this for hosted providers — the default only suits Ollama. |
 | `VIBE_TEMPERATURE` | `0.2` | Generation temperature (0.0-2.0) |
 | `VIBE_MAX_TOKENS` | `1000` | Max response tokens |
 | `VIBE_TIMEOUT` | `30s` | Request timeout |
@@ -412,9 +454,8 @@ The update check runs in a background process after each command, so it never sl
 ## Requirements
 
 - Zsh with Oh-My-Zsh
-- OpenAI-compatible API endpoint (Ollama, OpenAI, etc.)
+- An LLM provider — hosted (OpenAI, Anthropic, Groq, OpenRouter, etc.) or local (Ollama, LM Studio, vLLM)
 - macOS or Linux
-- No external dependencies!
 
 ## Uninstalling
 
@@ -461,9 +502,9 @@ make install      # Install to oh-my-zsh
 ## Contributing
 
 Contributions welcome! This project uses:
-- Go 1.21+ (stdlib only, no external deps)
+- Go 1.26+
 - Standard zsh scripting
-- OpenAI-compatible API spec
+- [gollm](https://github.com/teilomillet/gollm) for native multi-provider LLM access
 
 ## License
 

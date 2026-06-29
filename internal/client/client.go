@@ -4,85 +4,159 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"strings"
+	"time"
 
 	"github.com/skymoore/vibe-zsh/internal/cache"
 	"github.com/skymoore/vibe-zsh/internal/config"
-	vibeErrors "github.com/skymoore/vibe-zsh/internal/errors"
 	"github.com/skymoore/vibe-zsh/internal/logger"
 	"github.com/skymoore/vibe-zsh/internal/parser"
 	"github.com/skymoore/vibe-zsh/internal/progress"
 	"github.com/skymoore/vibe-zsh/internal/schema"
+	"github.com/teilomillet/gollm"
 )
 
+// Client wraps a gollm LLM instance and the vibe response-parsing pipeline.
+// All provider-specific transport, auth, and retry logic is handled by gollm;
+// this layer is responsible only for prompt construction, the multi-strategy
+// JSON parsing fallback, and caching.
 type Client struct {
-	config     *config.Config
-	httpClient *http.Client
-	cache      *cache.Cache
+	config  *config.Config
+	llm     gollm.LLM
+	initErr error
+	cache   *cache.Cache
 }
 
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type ResponseFormat struct {
-	Type       string      `json:"type"`
-	JSONSchema *JSONSchema `json:"json_schema,omitempty"`
-}
-
-type JSONSchema struct {
-	Name   string                 `json:"name"`
-	Strict string                 `json:"strict"`
-	Schema map[string]interface{} `json:"schema"`
-}
-
-type ChatCompletionRequest struct {
-	Model          string          `json:"model"`
-	Messages       []Message       `json:"messages"`
-	Temperature    float64         `json:"temperature,omitempty"`
-	MaxTokens      int             `json:"max_tokens,omitempty"`
-	Stream         bool            `json:"stream"`
-	ResponseFormat *ResponseFormat `json:"response_format,omitempty"`
-}
-
-type ChatCompletionResponse struct {
-	ID      string   `json:"id"`
-	Object  string   `json:"object"`
-	Created int64    `json:"created"`
-	Model   string   `json:"model"`
-	Choices []Choice `json:"choices"`
-	Usage   Usage    `json:"usage,omitempty"`
-}
-
-type Choice struct {
-	Index        int     `json:"index"`
-	Message      Message `json:"message"`
-	FinishReason string  `json:"finish_reason"`
-}
-
-type Usage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
-}
-
+// New constructs a Client. It builds the underlying gollm LLM from the
+// resolved configuration (provider, model, key, generation params). If the
+// LLM cannot be constructed, a Client with a nil llm is returned and the
+// construction error is surfaced on the first GenerateCommand call.
 func New(cfg *config.Config) *Client {
-	client := &Client{
-		config: cfg,
-		httpClient: &http.Client{
-			Timeout: cfg.Timeout,
-		},
+	client := &Client{config: cfg}
+
+	llm, err := newLLM(cfg)
+	if err != nil {
+		client.initErr = err
+		logger.Debug("Failed to initialize LLM provider: %v", err)
+	} else {
+		client.llm = llm
 	}
 
 	if cfg.EnableCache {
-		c, err := cache.New(cfg.CacheDir, cfg.CacheTTL)
-		if err == nil {
+		if c, err := cache.New(cfg.CacheDir, cfg.CacheTTL); err == nil {
 			client.cache = c
 		}
 	}
 
 	return client
+}
+
+// newLLM translates the vibe Config into gollm options and builds the LLM.
+func newLLM(cfg *config.Config) (gollm.LLM, error) {
+	opts := []gollm.ConfigOption{
+		gollm.SetProvider(cfg.Provider),
+		gollm.SetModel(cfg.Model),
+		gollm.SetTemperature(cfg.Temperature),
+		gollm.SetMaxTokens(cfg.MaxTokens),
+		gollm.SetTimeout(cfg.Timeout),
+		gollm.SetMaxRetries(cfg.MaxRetries),
+		gollm.SetRetryDelay(1 * time.Second),
+		gollm.SetLogLevel(logLevel(cfg)),
+	}
+
+	if cfg.APIKey != "" {
+		opts = append(opts, gollm.SetAPIKey(cfg.APIKey))
+	}
+
+	// Local providers reach a user-configured endpoint rather than a fixed
+	// hosted URL. Pass VIBE_API_URL through so custom ports/hosts work.
+	switch cfg.Provider {
+	case "ollama":
+		if cfg.APIURL != "" {
+			// gollm's Ollama provider expects the native base URL, not the
+			// OpenAI-compatible /v1 path, so strip a trailing /v1.
+			opts = append(opts, gollm.SetOllamaEndpoint(ollamaEndpoint(cfg.APIURL)))
+		}
+	case "vllm":
+		if cfg.APIURL != "" {
+			opts = append(opts, gollm.SetVLLMEndpoint(cfg.APIURL))
+		}
+	}
+
+	return gollm.NewLLM(opts...)
+}
+
+// isLocalProvider reports whether the provider runs locally and does not
+// require API-key authentication.
+func isLocalProvider(provider string) bool {
+	switch provider {
+	case "ollama", "lmstudio", "vllm":
+		return true
+	default:
+		return false
+	}
+}
+
+// notConfiguredError produces an actionable message explaining why the LLM
+// could not be constructed. gollm validates the configuration up front: hosted
+// providers require a correctly-formatted API key, while local providers must
+// be reachable at construction time.
+func (c *Client) notConfiguredError() error {
+	hint := fmt.Sprintf("check VIBE_PROVIDER (%q), VIBE_MODEL (%q) and VIBE_API_KEY", c.config.Provider, c.config.Model)
+	if isLocalProvider(c.config.Provider) {
+		hint = fmt.Sprintf("ensure the %s server is running and reachable at %s", c.config.Provider, c.config.APIURL)
+	}
+	if c.initErr != nil {
+		return fmt.Errorf("LLM provider %q is not configured correctly (%s): %w", c.config.Provider, hint, c.initErr)
+	}
+	return fmt.Errorf("LLM provider %q is not configured correctly - %s", c.config.Provider, hint)
+}
+
+func logLevel(cfg *config.Config) gollm.LogLevel {
+	if cfg.EnableDebugLogs {
+		return gollm.LogLevelDebug
+	}
+	return gollm.LogLevelError
+}
+
+// ollamaEndpoint normalizes an OpenAI-style Ollama URL (".../v1") to the
+// native Ollama base URL that gollm expects.
+func ollamaEndpoint(apiURL string) string {
+	u := strings.TrimSuffix(apiURL, "/")
+	u = strings.TrimSuffix(u, "/v1")
+	return u
+}
+
+// generate runs a single completion through gollm and returns the raw text
+// content. temperature lets individual strategies tune sampling (e.g. the
+// explicit-JSON retry lowers it). Provider transport and retries are handled
+// inside gollm.
+func (c *Client) generate(ctx context.Context, systemPrompt, query string, temperature float64) (string, error) {
+	if c.llm == nil {
+		return "", c.notConfiguredError()
+	}
+
+	prompt := gollm.NewPrompt(
+		query,
+		gollm.WithSystemPrompt(systemPrompt, gollm.CacheTypeEphemeral),
+	)
+
+	// gollm exposes generation parameters as provider options rather than
+	// per-call GenerateOptions, so set temperature on the instance before the
+	// call. vibe runs a single sequential request per invocation, so mutating
+	// the shared option here is safe.
+	c.llm.SetOption("temperature", temperature)
+
+	content, err := c.llm.Generate(ctx, prompt)
+	if err != nil {
+		return "", err
+	}
+
+	if strings.TrimSpace(content) == "" {
+		return "", fmt.Errorf("empty response from provider %q", c.config.Provider)
+	}
+
+	return content, nil
 }
 
 func (c *Client) GenerateCommand(ctx context.Context, query string) (*schema.CommandResponse, error) {
@@ -181,43 +255,14 @@ func (c *Client) cacheIfEnabled(query string, resp *schema.CommandResponse) {
 }
 
 func (c *Client) generateWithStructuredOutput(ctx context.Context, query string) (*schema.CommandResponse, error) {
-	messages := []Message{
-		{
-			Role:    "system",
-			Content: schema.GetSystemPrompt(c.config.OSName, c.config.Shell),
-		},
-		{
-			Role:    "user",
-			Content: query,
-		},
-	}
-
-	req := ChatCompletionRequest{
-		Model:       c.config.Model,
-		Messages:    messages,
-		Temperature: c.config.Temperature,
-		MaxTokens:   c.config.MaxTokens,
-		Stream:      false,
-		ResponseFormat: &ResponseFormat{
-			Type: "json_schema",
-			JSONSchema: &JSONSchema{
-				Name:   "shell_command_response",
-				Strict: "true",
-				Schema: schema.GetJSONSchema(),
-			},
-		},
-	}
-
-	chatResp, err := c.doRequest(ctx, req)
+	content, err := c.generate(ctx, schema.GetSystemPrompt(c.config.OSName, c.config.Shell), query, c.config.Temperature)
 	if err != nil {
 		return nil, err
 	}
 
-	content := chatResp.Choices[0].Message.Content
-
 	var cmdResp schema.CommandResponse
 	if err := json.Unmarshal([]byte(content), &cmdResp); err != nil {
-		return nil, fmt.Errorf("%w: failed to parse JSON content", vibeErrors.ErrInvalidJSON)
+		return nil, fmt.Errorf("failed to parse JSON content: %w", err)
 	}
 
 	return &cmdResp, nil
@@ -230,33 +275,13 @@ func (c *Client) generateWithEnhancedParsing(ctx context.Context, query string, 
 		if spinner != nil && c.config.MaxRetries > 1 {
 			spinner.Update(fmt.Sprintf("Parsing response (attempt %d/%d)...", attempt, c.config.MaxRetries))
 		}
-		messages := []Message{
-			{
-				Role:    "system",
-				Content: schema.GetSystemPrompt(c.config.OSName, c.config.Shell),
-			},
-			{
-				Role:    "user",
-				Content: query,
-			},
-		}
 
-		req := ChatCompletionRequest{
-			Model:       c.config.Model,
-			Messages:    messages,
-			Temperature: c.config.Temperature,
-			MaxTokens:   c.config.MaxTokens,
-			Stream:      false,
-		}
-
-		chatResp, err := c.doRequest(ctx, req)
+		content, err := c.generate(ctx, schema.GetSystemPrompt(c.config.OSName, c.config.Shell), query, c.config.Temperature)
 		if err != nil {
 			lastErr = fmt.Errorf("attempt %d: request failed: %w", attempt, err)
 			logger.LogParsingFailure(attempt, "enhanced_parsing_request", "", lastErr)
 			continue
 		}
-
-		content := chatResp.Choices[0].Message.Content
 
 		if c.config.EnableJSONExtraction {
 			cleanedJSON, err := parser.ExtractJSON(content)
@@ -308,31 +333,10 @@ func (c *Client) generateWithEnhancedParsing(ctx context.Context, query string, 
 func (c *Client) generateWithExplicitJSONPrompt(ctx context.Context, query string) (*schema.CommandResponse, error) {
 	explicitPrompt := schema.GetSystemPrompt(c.config.OSName, c.config.Shell) + "\n\nREMINDER: Your response must START with { and END with }. Nothing else."
 
-	messages := []Message{
-		{
-			Role:    "system",
-			Content: explicitPrompt,
-		},
-		{
-			Role:    "user",
-			Content: query,
-		},
-	}
-
-	req := ChatCompletionRequest{
-		Model:       c.config.Model,
-		Messages:    messages,
-		Temperature: c.config.Temperature * 0.5,
-		MaxTokens:   c.config.MaxTokens,
-		Stream:      false,
-	}
-
-	chatResp, err := c.doRequest(ctx, req)
+	content, err := c.generate(ctx, explicitPrompt, query, c.config.Temperature*0.5)
 	if err != nil {
 		return nil, err
 	}
-
-	content := chatResp.Choices[0].Message.Content
 
 	if c.config.EnableJSONExtraction {
 		cleanedJSON, err := parser.ExtractJSON(content)
@@ -371,7 +375,7 @@ func (c *Client) generateWithExplicitJSONPrompt(ctx context.Context, query strin
 	return &cmdResp, nil
 }
 
-func (c *Client) generateWithEmergencyFallback(ctx context.Context, query string, lastErr error) (*schema.CommandResponse, error) {
+func (c *Client) generateWithEmergencyFallback(_ context.Context, _ string, lastErr error) (*schema.CommandResponse, error) {
 	explanation := []string{
 		fmt.Sprintf("Vibe failed to generate a valid command after %d attempts.", c.config.MaxRetries),
 	}

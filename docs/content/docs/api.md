@@ -40,11 +40,12 @@ This document describes the internal API and architecture of vibe-zsh for develo
 │ (JSON/Text)     │  │  (Prompts)   │  │  (Spinner)   │
 └─────────────────┘  └──────────────┘  └──────────────┘
          │
-         │ OpenAI-compatible API
+         │ via gollm (native per-provider transport)
          ▼
 ┌──────────────────────────────────────┐
 │       LLM Provider                   │
-│  (Ollama/OpenAI/Claude/LM Studio)    │
+│  (OpenAI/Anthropic/Groq/OpenRouter/  │
+│   Ollama/LM Studio/vLLM/…)           │
 └──────────────────────────────────────┘
 ```
 
@@ -140,6 +141,7 @@ Manages all configuration from environment variables and command-line flags.
 ```go
 type Config struct {
     // API Configuration
+    Provider             string  // gollm provider (openai/anthropic/ollama/…)
     APIURL               string
     APIKey               string
     Model                string
@@ -192,6 +194,7 @@ cfg := config.Load()  // Loads from environment variables
 **Environment Variables:**
 
 All flags can be set via environment variables with `VIBE_` prefix:
+- `VIBE_PROVIDER`
 - `VIBE_API_URL`
 - `VIBE_MODEL`
 - `VIBE_TEMPERATURE`
@@ -200,17 +203,33 @@ All flags can be set via environment variables with `VIBE_` prefix:
 
 ### 4. Client (`internal/client/client.go`)
 
-Handles communication with OpenAI-compatible APIs with multi-layer fallback strategy.
+Wraps a [gollm](https://github.com/teilomillet/gollm) `LLM` instance and the
+vibe response-parsing pipeline. All provider-specific transport, authentication,
+and retry logic is handled by gollm; this layer is responsible only for prompt
+construction, the multi-strategy JSON parsing fallback, and caching.
 
 **Main Type:**
 
 ```go
 type Client struct {
-    config     *config.Config
-    httpClient *http.Client
-    cache      *cache.Cache
+    config  *config.Config
+    llm     gollm.LLM   // built once from config in New()
+    initErr error       // surfaced on first GenerateCommand if construction failed
+    cache   *cache.Cache
 }
 ```
+
+**Construction:**
+
+```go
+func New(cfg *config.Config) *Client
+```
+
+`New` builds the gollm `LLM` from the resolved config (provider, model, key,
+generation params). gollm validates the configuration up front — hosted
+providers require a correctly-formatted API key, and local providers must be
+reachable. If construction fails, the error is stored and returned on the first
+`GenerateCommand` call as an actionable message.
 
 **Primary Method:**
 
@@ -220,62 +239,25 @@ func (c *Client) GenerateCommand(ctx context.Context, query string) (*schema.Com
 
 **Multi-Layer Fallback Strategy:**
 
-1. **Layer 1: Structured Output** - Uses JSON schema with strict validation
+1. **Layer 1: Structured Output** - Strong JSON-formatting system prompt + strict validation
 2. **Layer 2: Enhanced Parsing** - Extracts JSON from text with retries
-3. **Layer 3: Explicit JSON Prompt** - Adds explicit JSON formatting instructions
+3. **Layer 3: Explicit JSON Prompt** - Adds explicit JSON formatting instructions (lower temperature)
 4. **Layer 4: Emergency Fallback** - Returns helpful error message
 
-**Request Structure:**
+**Generation:**
+
+All requests go through a single helper that calls gollm:
 
 ```go
-type ChatCompletionRequest struct {
-    Model          string          `json:"model"`
-    Messages       []Message       `json:"messages"`
-    Temperature    float64         `json:"temperature,omitempty"`
-    MaxTokens      int             `json:"max_tokens,omitempty"`
-    Stream         bool            `json:"stream"`
-    ResponseFormat *ResponseFormat `json:"response_format,omitempty"`
-}
-
-type Message struct {
-    Role    string `json:"role"`    // "system" or "user"
-    Content string `json:"content"`
-}
-
-type ResponseFormat struct {
-    Type       string      `json:"type"`              // "json_schema"
-    JSONSchema *JSONSchema `json:"json_schema,omitempty"`
-}
+prompt := gollm.NewPrompt(query, gollm.WithSystemPrompt(systemPrompt, gollm.CacheTypeEphemeral))
+c.llm.SetOption("temperature", temperature)
+content, err := c.llm.Generate(ctx, prompt)
 ```
 
-**Response Structure:**
-
-```go
-type ChatCompletionResponse struct {
-    ID      string   `json:"id"`
-    Object  string   `json:"object"`
-    Created int64    `json:"created"`
-    Model   string   `json:"model"`
-    Choices []Choice `json:"choices"`
-    Usage   Usage    `json:"usage,omitempty"`
-}
-
-type Choice struct {
-    Index        int     `json:"index"`
-    Message      Message `json:"message"`
-    FinishReason string  `json:"finish_reason"`
-}
-```
-
-**Retry Logic (`internal/client/retry.go`):**
-
-```go
-func (c *Client) withRetry(ctx context.Context, fn func() error) error
-```
-
-- Exponential backoff: 1s → 2s → 4s (max 10s)
-- Retries on network errors and 5xx status codes
-- Respects context cancellation
+gollm constructs the provider-native request (OpenAI chat completions,
+Anthropic messages, Ollama, etc.), attaches auth, applies retries with backoff,
+and respects context cancellation. vibe no longer maintains its own HTTP client,
+request/response structs, or retry loop.
 
 ### 5. Parser (`internal/parser/text_parser.go`)
 
@@ -579,10 +561,9 @@ func IsRetryable(err error) bool
    - **Layer 3**: Explicit JSON prompt with lower temperature
    - **Layer 4**: Emergency fallback with error message
 
-8. **HTTP Request**
-   - Constructs OpenAI-compatible request
-   - Adds authentication header if API key present
-   - Applies retry logic with exponential backoff
+8. **Provider Request (via gollm)**
+   - gollm builds the provider-native request and attaches authentication
+   - Applies retry logic with backoff internally
    - Respects context cancellation (Ctrl+C)
 
 9. **Response Parsing**
@@ -737,19 +718,21 @@ vibe-zsh --interactive "remove all logs"
 
 **Ollama:**
 ```bash
+export VIBE_PROVIDER="ollama"
 export VIBE_API_URL="http://localhost:11434/v1"
 export VIBE_MODEL="llama3:8b"
 ```
 
 **OpenAI:**
 ```bash
-export VIBE_API_URL="https://api.openai.com/v1"
+export VIBE_PROVIDER="openai"
 export VIBE_API_KEY="sk-..."
-export VIBE_MODEL="gpt-4"
+export VIBE_MODEL="gpt-4o"
 ```
 
 **LM Studio:**
 ```bash
+export VIBE_PROVIDER="lmstudio"
 export VIBE_API_URL="http://localhost:1234/v1"
 export VIBE_MODEL="local-model"
 ```
@@ -761,13 +744,17 @@ export VIBE_MODEL="local-model"
 ```bash
 make build        # Current platform
 make build-all    # All platforms (Linux, macOS, Windows)
-make install      # Build and install to /usr/local/bin
+make install      # Build and install to ~/.oh-my-zsh/custom/plugins/vibe
 ```
+
+`make build`/`make install` stamp the version from git tags by default. Use
+`make build-dev` for a build stamped as `dev` (which the updater never tries to
+self-update).
 
 Build manually:
 
 ```bash
-go build -o vibe-zsh -ldflags "-X main.version=dev" .
+go build -o vibe -ldflags "-X main.version=$(git describe --tags)" main.go
 ```
 
 ### Project Structure
@@ -779,10 +766,8 @@ vibe-zsh/
 │   └── history.go         # History subcommands
 ├── internal/
 │   ├── cache/             # Response caching
-│   ├── client/            # HTTP client + retry logic
-│   │   ├── client.go      # Main client with fallback layers
-│   │   ├── http.go        # HTTP request handling
-│   │   └── retry.go       # Exponential backoff retry
+│   ├── client/            # gollm LLM wrapper + parsing pipeline
+│   │   └── client.go      # Main client with fallback layers
 │   ├── config/            # Configuration management
 │   ├── confirm/           # Interactive confirmation dialog
 │   ├── errors/            # Error types and handling
@@ -915,13 +900,13 @@ Before submitting PR:
 vibe-zsh uses minimal external dependencies:
 
 **Core Dependencies:**
+- `github.com/teilomillet/gollm` - Multi-provider LLM access (transport, auth, retries)
 - `github.com/spf13/cobra` - CLI framework
 - `github.com/charmbracelet/bubbletea` - TUI framework
 - `github.com/charmbracelet/bubbles` - TUI components
 - `github.com/charmbracelet/lipgloss` - Terminal styling
 
 **Standard Library:**
-- `net/http` - HTTP client
 - `encoding/json` - JSON parsing
 - `crypto/sha256` - Cache key generation
 - `context` - Cancellation and timeouts
@@ -929,64 +914,34 @@ vibe-zsh uses minimal external dependencies:
 
 **Why These Dependencies?**
 
+- **gollm**: Native, multi-provider LLM client — removes the need to maintain a
+  bespoke HTTP client, request/response structs, and retry logic, and adds
+  first-class support for providers like Anthropic that aren't OpenAI-compatible
 - **Cobra**: Industry-standard CLI framework with excellent flag parsing
 - **Bubble Tea**: Modern, composable TUI framework for interactive features
 - **Lipgloss**: Beautiful terminal styling without complexity
 
-All dependencies are well-maintained, widely-used, and have minimal transitive dependencies.
+## Provider Support
 
-## API Compatibility
+vibe-zsh talks to each provider natively through [gollm](https://github.com/teilomillet/gollm),
+so the request/response wire format is provider-specific and handled by gollm —
+vibe does not construct raw HTTP payloads itself.
 
-vibe-zsh is compatible with any OpenAI-compatible API:
+**Provider kinds:**
 
-**Required Endpoints:**
-- `POST /chat/completions`
+- **Hosted** (`openai`, `anthropic`, `groq`, `openrouter`, `deepseek`,
+  `google-openai`, `mistral`, `cohere`) — fixed endpoint, require an API key
+  whose format is validated at startup.
+- **Local** (`ollama`, `lmstudio`, `vllm`) — reachable at a user-supplied
+  `VIBE_API_URL`; no API key, but must be running when vibe starts.
 
-**Required Request Format:**
-```json
-{
-  "model": "string",
-  "messages": [
-    {"role": "system", "content": "string"},
-    {"role": "user", "content": "string"}
-  ],
-  "temperature": 0.2,
-  "max_tokens": 1000,
-  "stream": false,
-  "response_format": {
-    "type": "json_schema",
-    "json_schema": {...}
-  }
-}
-```
+Select a provider with `VIBE_PROVIDER`, or let vibe infer it from `VIBE_API_URL`.
 
-**Required Response Format:**
-```json
-{
-  "id": "string",
-  "object": "chat.completion",
-  "created": 1234567890,
-  "model": "string",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "string"
-      },
-      "finish_reason": "stop"
-    }
-  ]
-}
-```
-
-**Tested Providers:**
-- ✅ Ollama
-- ✅ OpenAI
-- ✅ LM Studio
-- ✅ Claude (via OpenAI-compatible proxy)
-- ✅ Anthropic API
-- ✅ Azure OpenAI
+{{< callout type="info" >}}
+The `openai` provider always targets `api.openai.com`. For a self-hosted
+OpenAI-compatible gateway, use the `lmstudio` or `vllm` provider and set
+`VIBE_API_URL`.
+{{< /callout >}}
 
 ## Performance Considerations
 
@@ -998,8 +953,8 @@ vibe-zsh is compatible with any OpenAI-compatible API:
 
 **Network:**
 - Timeout: 30s default
-- Retry: 3 attempts with exponential backoff
-- Connection pooling via `http.Client`
+- Retry: handled by gollm (configurable via `VIBE_MAX_RETRIES`)
+- Transport managed by gollm's provider clients
 
 **Memory:**
 - Minimal memory footprint (~10MB)

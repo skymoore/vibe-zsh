@@ -24,6 +24,7 @@ var (
 	appVersion string
 	cfg        *config.Config
 
+	provider             string
 	apiURL               string
 	apiKey               string
 	model                string
@@ -101,6 +102,7 @@ var checkUpdateCmd = &cobra.Command{
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	rootCmd.PersistentFlags().StringVar(&provider, "provider", "", "LLM provider: ollama, openai, anthropic, groq, openrouter (default: inferred from --api-url)")
 	rootCmd.PersistentFlags().StringVar(&apiURL, "api-url", "", "API endpoint URL (default: http://localhost:11434/v1)")
 	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "API authentication key")
 	rootCmd.PersistentFlags().StringVar(&model, "model", "", "Model to use (default: llama3:8b)")
@@ -134,6 +136,9 @@ func init() {
 func initConfig() {
 	cfg = config.Load()
 
+	if provider != "" {
+		cfg.Provider = provider
+	}
 	if apiURL != "" {
 		cfg.APIURL = apiURL
 	}

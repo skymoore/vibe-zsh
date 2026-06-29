@@ -18,19 +18,21 @@ function vibe() {
     # Extract only the first line (the actual command)
     # Everything else is explanations that were already displayed during streaming
     local cmd="${output%%$'\n'*}"
-    
+
     # Note: Interactive confirmation is now handled in the Go binary
     # when VIBE_INTERACTIVE=true is set
-    
-    # Clear buffer and reset prompt
-    BUFFER=""
-    CURSOR=0
-    zle reset-prompt
-    
-    # Set new buffer and move cursor to end (only the command, not explanations)
+
+    # The binary wrote the spinner/explanations to the terminal (stderr) while
+    # this widget was active, so ZLE's view of the cursor position is now stale.
+    # zle -I invalidates the display and tells ZLE that external output occurred;
+    # without it, reset-prompt redraws relative to the wrong position and the
+    # prompt (especially RPROMPT) ends up visually shifted. Set the buffer first,
+    # then do a single reset-prompt so the prompt is redrawn cleanly once.
+    zle -I
+
     BUFFER="$cmd"
     CURSOR=${#BUFFER}
-    zle redisplay
+    zle reset-prompt
   else
     zle -M "vibe: Failed to generate command"
   fi
@@ -50,37 +52,36 @@ function vibe-history-widget() {
   local exit_code=$?
   
   if [[ $exit_code -eq 0 && -n "$output" ]]; then
+    # The history menu is a full-screen TUI rendered to the terminal, so ZLE's
+    # display state is stale on return. Invalidate it before redrawing so the
+    # prompt isn't left visually shifted.
+    zle -I
+
     # Check if this is a regeneration request
     if [[ "$output" == REGENERATE:* ]]; then
       # Extract the query (remove REGENERATE: prefix)
       local query="${output#REGENERATE:}"
-      
+
       # Set the query in the buffer and trigger vibe
       BUFFER="$query"
       CURSOR=${#BUFFER}
       zle reset-prompt
-      
+
       # Call the vibe widget to regenerate
       vibe
     elif [[ "$output" == EDIT:* ]]; then
       # Extract the query (remove EDIT: prefix)
       local query="${output#EDIT:}"
-      
+
       # Put query in buffer for editing
       BUFFER="$query"
       CURSOR=${#BUFFER}
       zle reset-prompt
-      zle redisplay
     else
       # Normal command insertion
-      BUFFER=""
-      CURSOR=0
-      zle reset-prompt
-      
-      # Set new buffer with selected command and move cursor to end
       BUFFER="$output"
       CURSOR=${#BUFFER}
-      zle redisplay
+      zle reset-prompt
     fi
   fi
 }
@@ -100,11 +101,14 @@ function vibe-regenerate-last-widget() {
   local exit_code=$?
   
   if [[ $exit_code -eq 0 && -n "$query" ]]; then
+    # Invalidate ZLE's display in case the lookup wrote to the terminal.
+    zle -I
+
     # Set the query in the buffer and trigger vibe
     BUFFER="$query"
     CURSOR=${#BUFFER}
     zle reset-prompt
-    
+
     # Call the vibe widget to regenerate
     vibe
   else
@@ -159,6 +163,10 @@ function vh() {
   fi
 }
 
+# Add this plugin's directory to fpath so the _vibe completion is discoverable.
+# Do NOT run compinit here: the completion system is initialized by the shell
+# framework (e.g. oh-my-zsh) or the user's own zshrc. Calling compinit a second
+# time at plugin-load time re-initializes completions after the prompt/theme is
+# already set up, which can leave the prompt visually shifted (especially with a
+# right-side prompt/RPROMPT).
 fpath+="${VIBE_PLUGIN_DIR}"
-autoload -Uz compinit
-compinit

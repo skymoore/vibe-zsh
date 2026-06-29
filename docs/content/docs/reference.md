@@ -12,11 +12,36 @@ All configuration is done through environment variables in your `~/.zshrc`.
 
 ### API Configuration
 
+#### VIBE_PROVIDER
+
+**Type:** String  
+**Default:** _(inferred from `VIBE_API_URL`)_  
+**Description:** The LLM provider to use (via [gollm](https://github.com/teilomillet/gollm)). Setting this explicitly is recommended.
+
+**Hosted providers** (fixed endpoint, require `VIBE_API_KEY`, ignore `VIBE_API_URL`):
+`openai`, `anthropic`, `groq`, `openrouter`, `deepseek`, `google-openai`, `mistral`, `cohere`.
+
+**Local providers** (set `VIBE_API_URL`, no API key):
+`ollama`, `lmstudio`, `vllm`.
+
+**Examples:**
+
+```bash
+export VIBE_PROVIDER="openai"
+export VIBE_PROVIDER="anthropic"
+export VIBE_PROVIDER="ollama"
+```
+
+If unset, the provider is inferred from `VIBE_API_URL` (e.g. an `openrouter.ai`
+or `:11434` URL). This exists mainly to keep older URL-based configs working.
+
+---
+
 #### VIBE_API_URL
 
 **Type:** String  
 **Default:** `http://localhost:11434/v1`  
-**Description:** The base URL for the OpenAI-compatible API endpoint.
+**Description:** Endpoint URL for **local** providers only (`ollama`, `lmstudio`, `vllm`). Hosted providers use their fixed built-in endpoints and ignore this value.
 
 **Examples:**
 
@@ -24,32 +49,36 @@ All configuration is done through environment variables in your `~/.zshrc`.
 # Ollama (local)
 export VIBE_API_URL="http://localhost:11434/v1"
 
-# OpenAI
-export VIBE_API_URL="https://api.openai.com/v1"
-
-# Anthropic via OpenRouter
-export VIBE_API_URL="https://openrouter.ai/api/v1"
-
-# LM Studio
+# LM Studio (local)
 export VIBE_API_URL="http://localhost:1234/v1"
 
-# Groq
-export VIBE_API_URL="https://api.groq.com/openai/v1"
+# Custom OpenAI-compatible gateway (use the vllm or lmstudio provider)
+export VIBE_PROVIDER="vllm"
+export VIBE_API_URL="http://my-gateway.internal:8000/v1"
 ```
+
+{{< callout type="info" >}}
+The `openai` provider always targets `api.openai.com` and cannot be redirected
+with `VIBE_API_URL`. For a self-hosted OpenAI-compatible gateway, use the
+`lmstudio` or `vllm` provider.
+{{< /callout >}}
 
 ---
 
 #### VIBE_API_KEY
 
 **Type:** String  
-**Default:** `""` (empty, not required for Ollama)  
-**Description:** API key for authentication. Required for most cloud providers.
+**Default:** `""` (empty; not required for local providers)  
+**Description:** API key for authentication. Required for hosted providers; ignored by local providers (`ollama`, `lmstudio`, `vllm`). Hosted providers validate the key format at startup.
 
 **Examples:**
 
 ```bash 
 # OpenAI
 export VIBE_API_KEY="sk-..."
+
+# Anthropic
+export VIBE_API_KEY="sk-ant-..."
 
 # OpenRouter
 export VIBE_API_KEY="sk-or-..."
@@ -66,7 +95,7 @@ export VIBE_API_KEY="gsk_..."
 
 **Type:** String  
 **Default:** `llama3:8b`  
-**Description:** The model identifier to use for command generation.
+**Description:** The model identifier to use for command generation. The default suits Ollama only — set this explicitly for hosted providers.
 
 **Examples:**
 
@@ -77,13 +106,14 @@ export VIBE_MODEL="llama3.1:70b"
 export VIBE_MODEL="codellama:13b"
 
 # OpenAI
-export VIBE_MODEL="gpt-4"
+export VIBE_MODEL="gpt-4o"
 export VIBE_MODEL="gpt-4-turbo"
-export VIBE_MODEL="gpt-3.5-turbo"
 
-# Anthropic (via OpenRouter)
+# Anthropic
+export VIBE_MODEL="claude-3-5-sonnet-20241022"
+
+# OpenRouter
 export VIBE_MODEL="anthropic/claude-3.5-sonnet"
-export VIBE_MODEL="anthropic/claude-3-opus"
 
 # Groq
 export VIBE_MODEL="llama-3.1-70b-versatile"
@@ -122,7 +152,7 @@ export VIBE_TEMPERATURE=0.7
 #### VIBE_MAX_TOKENS
 
 **Type:** Integer  
-**Default:** `500`  
+**Default:** `1000`  
 **Description:** Maximum number of tokens in the API response.
 
 **Examples:**
@@ -617,6 +647,7 @@ export VIBE_CACHE_TTL=168h
 
 ```bash 
 # Minimal configuration (uses defaults)
+export VIBE_PROVIDER="ollama"
 export VIBE_API_URL="http://localhost:11434/v1"
 export VIBE_MODEL="llama3:8b"
 ```
@@ -624,27 +655,27 @@ export VIBE_MODEL="llama3:8b"
 ### OpenAI
 
 ```bash 
-export VIBE_API_URL="https://api.openai.com/v1"
+export VIBE_PROVIDER="openai"
 export VIBE_API_KEY="sk-..."
-export VIBE_MODEL="gpt-4"
+export VIBE_MODEL="gpt-4o"
 export VIBE_TEMPERATURE=0.2
 export VIBE_TIMEOUT=30s
 ```
 
-### Anthropic (via OpenRouter)
+### Anthropic
 
 ```bash 
-export VIBE_API_URL="https://openrouter.ai/api/v1"
-export VIBE_API_KEY="sk-or-..."
-export VIBE_MODEL="anthropic/claude-3.5-sonnet"
+export VIBE_PROVIDER="anthropic"
+export VIBE_API_KEY="sk-ant-..."
+export VIBE_MODEL="claude-3-5-sonnet-20241022"
 export VIBE_TEMPERATURE=0.2
-export VIBE_MAX_TOKENS=500
+export VIBE_MAX_TOKENS=1000
 ```
 
 ### Groq
 
 ```bash 
-export VIBE_API_URL="https://api.groq.com/openai/v1"
+export VIBE_PROVIDER="groq"
 export VIBE_API_KEY="gsk_..."
 export VIBE_MODEL="llama-3.1-70b-versatile"
 export VIBE_TEMPERATURE=0.4
@@ -654,11 +685,11 @@ export VIBE_TEMPERATURE=0.4
 
 ```bash 
 # API Configuration
-export VIBE_API_URL="https://api.openai.com/v1"
+export VIBE_PROVIDER="openai"
 export VIBE_API_KEY="sk-..."
-export VIBE_MODEL="gpt-4"
+export VIBE_MODEL="gpt-4o"
 export VIBE_TEMPERATURE=0.2
-export VIBE_MAX_TOKENS=500
+export VIBE_MAX_TOKENS=1000
 export VIBE_TIMEOUT=30s
 
 # Parsing & Reliability (defaults shown, usually don't need to change)
@@ -741,11 +772,12 @@ export VIBE_BINARY="/usr/local/bin/vibe"
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `VIBE_API_URL` | String | `http://localhost:11434/v1` | API endpoint URL |
-| `VIBE_API_KEY` | String | `""` | API authentication key |
-| `VIBE_MODEL` | String | `llama3:8b` | Model identifier |
+| `VIBE_PROVIDER` | String | _(inferred from `VIBE_API_URL`)_ | LLM provider (hosted: `openai`, `anthropic`, `groq`, `openrouter`, …; local: `ollama`, `lmstudio`, `vllm`) |
+| `VIBE_API_URL` | String | `http://localhost:11434/v1` | Endpoint URL for local providers only; ignored by hosted providers |
+| `VIBE_API_KEY` | String | `""` | API key (required for hosted providers) |
+| `VIBE_MODEL` | String | `llama3:8b` | Model identifier (set explicitly for hosted providers) |
 | `VIBE_TEMPERATURE` | Float | `0.2` | Randomness (0.0-2.0) |
-| `VIBE_MAX_TOKENS` | Integer | `500` | Max response tokens |
+| `VIBE_MAX_TOKENS` | Integer | `1000` | Max response tokens |
 | `VIBE_TIMEOUT` | Duration | `30s` | Request timeout |
 
 ### Parsing & Reliability
