@@ -81,6 +81,15 @@ func newLLM(cfg *config.Config) (gollm.LLM, error) {
 		if cfg.APIURL != "" {
 			opts = append(opts, gollm.SetVLLMEndpoint(cfg.APIURL))
 		}
+	case config.ProviderOpenAICompatible:
+		// An OpenAI-compatible gateway that DOES require a Bearer token.
+		// We reuse gollm's vllm transport (OpenAI dialect + user endpoint)
+		// but wrap it with a provider that adds Authorization. The endpoint
+		// is read from cfg.VLLMEndpoint by the underlying vllm provider.
+		registerOpenAICompatibleProvider()
+		if cfg.APIURL != "" {
+			opts = append(opts, gollm.SetVLLMEndpoint(cfg.APIURL))
+		}
 	}
 
 	return gollm.NewLLM(opts...)

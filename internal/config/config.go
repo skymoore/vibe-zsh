@@ -42,6 +42,12 @@ type Config struct {
 	RegenerateKey        string
 }
 
+// ProviderOpenAICompatible is the provider name for a generic OpenAI-compatible
+// gateway that requires Bearer-token auth. Unlike gollm's "openai" provider
+// (hardcoded to api.openai.com), it honors VIBE_API_URL, and unlike "vllm" it
+// sends an Authorization header.
+const ProviderOpenAICompatible = "openai-compatible"
+
 func Load() *Config {
 	apiURL := getEnv("VIBE_API_URL", "http://localhost:11434/v1")
 	return &Config{
@@ -103,11 +109,11 @@ func inferProvider(apiURL string) string {
 		// LM Studio default port; the lmstudio provider honors a custom endpoint.
 		return "lmstudio"
 	default:
-		// Default to the OpenAI-compatible dialect. NOTE: gollm's "openai"
-		// provider targets api.openai.com directly. For other OpenAI-compatible
-		// gateways, set VIBE_PROVIDER explicitly (e.g. "lmstudio", "vllm",
-		// "groq", "openrouter", "deepseek").
-		return "openai"
+		// A custom host we don't recognize. Use the openai-compatible
+		// provider, which honors VIBE_API_URL AND sends a Bearer token —
+		// unlike gollm's "openai" provider, which is hardcoded to
+		// api.openai.com and would silently ignore VIBE_API_URL.
+		return ProviderOpenAICompatible
 	}
 }
 

@@ -21,19 +21,27 @@ All configuration is done through environment variables in your `~/.zshrc`.
 **Hosted providers** (fixed endpoint, require `VIBE_API_KEY`, ignore `VIBE_API_URL`):
 `openai`, `anthropic`, `groq`, `openrouter`, `deepseek`, `google-openai`, `mistral`, `cohere`.
 
-**Local providers** (set `VIBE_API_URL`, no API key):
+**Local providers** (set `VIBE_API_URL`, no API key required):
 `ollama`, `lmstudio`, `vllm`.
+
+**Custom OpenAI-compatible gateways** (set both `VIBE_API_URL` and `VIBE_API_KEY`):
+`openai-compatible` — for self-hosted gateways, proxies, or alternative inference
+hosts that expose an OpenAI-compatible `/v1` API and require a Bearer token. Unlike
+`vllm`, this provider sends an `Authorization: Bearer` header.
 
 **Examples:**
 
 ```bash
-export VIBE_PROVIDER="openai"
-export VIBE_PROVIDER="anthropic"
-export VIBE_PROVIDER="ollama"
+export VIBE_PROVIDER="openai"              # OpenAI
+export VIBE_PROVIDER="anthropic"           # Anthropic
+export VIBE_PROVIDER="ollama"              # Local Ollama
+export VIBE_PROVIDER="openai-compatible"   # Custom authenticated gateway
 ```
 
-If unset, the provider is inferred from `VIBE_API_URL` (e.g. an `openrouter.ai`
-or `:11434` URL). This exists mainly to keep older URL-based configs working.
+If unset, the provider is inferred from `VIBE_API_URL` (e.g. `openrouter.ai` or
+`:11434`). For any unrecognized host, vibe infers `openai-compatible` — so a
+custom gateway URL works without setting `VIBE_PROVIDER` explicitly, though
+setting it is still recommended.
 
 ---
 
@@ -41,26 +49,28 @@ or `:11434` URL). This exists mainly to keep older URL-based configs working.
 
 **Type:** String  
 **Default:** `http://localhost:11434/v1`  
-**Description:** Endpoint URL for **local** providers only (`ollama`, `lmstudio`, `vllm`). Hosted providers use their fixed built-in endpoints and ignore this value.
+**Description:** Endpoint URL. Honored by local providers (`ollama`, `lmstudio`, `vllm`) and the `openai-compatible` provider. Hosted providers (`openai`, `anthropic`, `groq`, etc.) use their fixed built-in endpoints and ignore this value entirely.
 
 **Examples:**
 
-```bash 
+```bash
 # Ollama (local)
 export VIBE_API_URL="http://localhost:11434/v1"
 
 # LM Studio (local)
 export VIBE_API_URL="http://localhost:1234/v1"
 
-# Custom OpenAI-compatible gateway (use the vllm or lmstudio provider)
-export VIBE_PROVIDER="vllm"
-export VIBE_API_URL="http://my-gateway.internal:8000/v1"
+# Custom authenticated gateway — must use openai-compatible, not openai or vllm
+export VIBE_PROVIDER="openai-compatible"
+export VIBE_API_URL="https://my-gateway.example.com/v1"
+export VIBE_API_KEY="sk-..."
 ```
 
-{{< callout type="info" >}}
-The `openai` provider always targets `api.openai.com` and cannot be redirected
-with `VIBE_API_URL`. For a self-hosted OpenAI-compatible gateway, use the
-`lmstudio` or `vllm` provider.
+{{< callout type="warning" >}}
+The `openai` provider always targets `api.openai.com` and ignores `VIBE_API_URL`.
+The `vllm` provider honors `VIBE_API_URL` but never sends an `Authorization`
+header, so authenticated gateways will return `401`. For any custom gateway that
+requires a Bearer token, use `VIBE_PROVIDER=openai-compatible`.
 {{< /callout >}}
 
 ---
@@ -69,7 +79,7 @@ with `VIBE_API_URL`. For a self-hosted OpenAI-compatible gateway, use the
 
 **Type:** String  
 **Default:** `""` (empty; not required for local providers)  
-**Description:** API key for authentication. Required for hosted providers; ignored by local providers (`ollama`, `lmstudio`, `vllm`). Hosted providers validate the key format at startup.
+**Description:** API key for authentication. Required for hosted providers and `openai-compatible`; ignored by purely local providers (`ollama`, `lmstudio`, `vllm`). Hosted providers validate the key format at startup.
 
 **Examples:**
 
@@ -681,6 +691,19 @@ export VIBE_MODEL="llama-3.1-70b-versatile"
 export VIBE_TEMPERATURE=0.4
 ```
 
+### Custom OpenAI-compatible gateway
+
+For self-hosted gateways, proxies, or alternative inference hosts that expose an
+OpenAI-compatible `/v1` API and require Bearer authentication:
+
+```bash
+export VIBE_PROVIDER="openai-compatible"
+export VIBE_API_URL="https://your-gateway.example.com/v1"
+export VIBE_API_KEY="sk-..."
+export VIBE_MODEL="your-model-name"
+export VIBE_TEMPERATURE=0.2
+```
+
 ### Complete Configuration Example
 
 ```bash 
@@ -772,9 +795,9 @@ export VIBE_BINARY="/usr/local/bin/vibe"
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `VIBE_PROVIDER` | String | _(inferred from `VIBE_API_URL`)_ | LLM provider (hosted: `openai`, `anthropic`, `groq`, `openrouter`, …; local: `ollama`, `lmstudio`, `vllm`) |
-| `VIBE_API_URL` | String | `http://localhost:11434/v1` | Endpoint URL for local providers only; ignored by hosted providers |
-| `VIBE_API_KEY` | String | `""` | API key (required for hosted providers) |
+| `VIBE_PROVIDER` | String | _(inferred from `VIBE_API_URL`)_ | LLM provider. Hosted: `openai`, `anthropic`, `groq`, `openrouter`, …; Local: `ollama`, `lmstudio`, `vllm`; Custom gateway: `openai-compatible` |
+| `VIBE_API_URL` | String | `http://localhost:11434/v1` | Endpoint URL. Used by local providers and `openai-compatible`; ignored by hosted providers |
+| `VIBE_API_KEY` | String | `""` | API key. Required for hosted providers and `openai-compatible`; ignored by local providers |
 | `VIBE_MODEL` | String | `llama3:8b` | Model identifier (set explicitly for hosted providers) |
 | `VIBE_TEMPERATURE` | Float | `0.2` | Randomness (0.0-2.0) |
 | `VIBE_MAX_TOKENS` | Integer | `1000` | Max response tokens |

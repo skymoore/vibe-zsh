@@ -36,7 +36,7 @@ docker ps -a
 
 - 🧠 **Natural language to commands** - Just describe what you want
 - ⚡ **Lightning fast** - Cached responses are 100-400x faster
-- 🔌 **Universal compatibility** - Works with Ollama, OpenAI, Claude, and more
+- 🔌 **Multi-provider** - Works with Ollama, OpenAI, Claude, custom OpenAI-compatible gateways, and more
 - 🛡️ **Safe by default** - Preview commands before execution
 - 📚 **Learn while you work** - Inline explanations for every command
 - 🎯 **Zero dependencies** - Single compiled binary

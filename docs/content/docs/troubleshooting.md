@@ -207,6 +207,44 @@ vibe automatically handles corrupted LLM responses with multi-layer parsing. If 
    source ~/.zshrc
    ```
 
+## 401 "Authentication Error, No api key passed in"
+
+**Symptoms:** Errors like `API error [provider vllm status 401 body {"error":{"message":"Authentication Error, No api key passed in."...`
+
+This happens when you set `VIBE_PROVIDER=vllm` to reach a custom gateway. The
+`vllm` provider speaks the OpenAI dialect and honors `VIBE_API_URL`, but it
+**never sends an `Authorization` header** — it assumes a local, unauthenticated
+server. Authenticated gateways therefore reject every request with `401`.
+
+**Solution:** Switch to the `openai-compatible` provider, which sends both the
+custom URL and a `Bearer` token:
+
+```bash
+export VIBE_PROVIDER="openai-compatible"   # not "vllm"
+export VIBE_API_URL="https://your-gateway.example.com/v1"
+export VIBE_API_KEY="sk-..."
+export VIBE_MODEL="your-model-name"
+```
+
+## Requests going to api.openai.com instead of your gateway
+
+**Symptoms:** Auth errors from OpenAI despite setting a custom `VIBE_API_URL`, or
+charges appearing on your OpenAI account.
+
+This happens because the `openai` provider (and the old provider inference
+default for unrecognized URLs) ignores `VIBE_API_URL` and always hits
+`api.openai.com`.
+
+**Solution:** Set `VIBE_PROVIDER=openai-compatible` explicitly. vibe now infers
+`openai-compatible` for unrecognized URLs automatically, but an explicit value is
+safer:
+
+```bash
+export VIBE_PROVIDER="openai-compatible"
+export VIBE_API_URL="https://your-gateway.example.com/v1"
+export VIBE_API_KEY="sk-..."
+```
+
 ## API Connection Errors
 
 **Symptoms:** Errors like "connection refused" or "timeout."
@@ -228,7 +266,7 @@ vibe automatically handles corrupted LLM responses with multi-layer parsing. If 
    echo $VIBE_API_URL
    ```
 
-4. **Check API key is set (if using OpenAI/Claude):**
+4. **Check API key is set (if using OpenAI/Claude/openai-compatible):**
    ```bash
    echo $VIBE_API_KEY
    # Should not be empty

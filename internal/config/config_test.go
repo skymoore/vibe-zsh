@@ -44,6 +44,44 @@ func TestLoad(t *testing.T) {
 	}
 }
 
+func TestInferProvider(t *testing.T) {
+	cases := []struct {
+		apiURL string
+		want   string
+	}{
+		{"https://openrouter.ai/api/v1", "openrouter"},
+		{"https://api.anthropic.com", "anthropic"},
+		{"https://api.groq.com/openai/v1", "groq"},
+		{"https://api.openai.com/v1", "openai"},
+		{"https://api.deepseek.com", "deepseek"},
+		{"http://localhost:11434/v1", "ollama"},
+		{"http://localhost:1234/v1", "lmstudio"},
+		// Unknown custom gateways must NOT default to "openai" (which would
+		// silently target api.openai.com and ignore the URL).
+		{"https://api.ai.rwx.dev/v1", ProviderOpenAICompatible},
+		{"https://my-gateway.example.com/v1", ProviderOpenAICompatible},
+	}
+	for _, c := range cases {
+		if got := inferProvider(c.apiURL); got != c.want {
+			t.Errorf("inferProvider(%q) = %q, want %q", c.apiURL, got, c.want)
+		}
+	}
+}
+
+func TestInferProviderRespectsExplicitOverride(t *testing.T) {
+	os.Setenv("VIBE_API_URL", "https://api.ai.rwx.dev/v1")
+	os.Setenv("VIBE_PROVIDER", ProviderOpenAICompatible)
+	defer func() {
+		os.Unsetenv("VIBE_API_URL")
+		os.Unsetenv("VIBE_PROVIDER")
+	}()
+
+	cfg := Load()
+	if cfg.Provider != ProviderOpenAICompatible {
+		t.Errorf("Provider = %q, want %q", cfg.Provider, ProviderOpenAICompatible)
+	}
+}
+
 func TestLoadDefaults(t *testing.T) {
 	cfg := Load()
 
