@@ -1,0 +1,28 @@
+# vibe 🌊
+
+> vibe is a zsh plugin that transforms natural language into shell commands using AI. Type what you want in plain English, press Ctrl+G, and get an OS-aware command with inline explanations. It works with Ollama, LM Studio, OpenAI, Anthropic (Claude), Groq, OpenRouter, and more, and ships as a single zero-dependency compiled Go binary.
+
+## Overview
+
+- Natural language to shell commands: describe intent in plain English, press Ctrl+G to generate.
+- OS-aware generation: automatically detects and targets macOS, Linux, or Windows.
+- Fast: first query ~500ms-2s, cached responses ~5-10ms (100-400x faster).
+- Multi-provider: hosted (openai, anthropic, groq, openrouter, deepseek, google-openai, mistral, cohere) and local (ollama, lmstudio, vllm) via gollm.
+- Safe by default: commands are never executed automatically; review and edit before running.
+- Inline explanations for every part of the generated command.
+- Zero dependencies: single compiled binary, no Node.js or Python required.
+- All configuration via environment variables in ~/.zshrc; all settings optional with sensible defaults.
+
+## Docs
+
+- [Documentation Home](https://vibe-zsh.dev/docs/): Overview and quick links to all guides.
+- [Installation](https://vibe-zsh.dev/docs/installation/): Install via Homebrew (brew tap skymoore/tap; brew install --cask vibe-zsh) or other methods.
+- [Configuration](https://vibe-zsh.dev/docs/configuration/): Configure your LLM provider via environment variables (VIBE_PROVIDER, VIBE_API_KEY, VIBE_MODEL, VIBE_API_URL).
+- [Usage](https://vibe-zsh.dev/docs/usage/): How to use vibe, keybindings, and query history.
+- [Troubleshooting](https://vibe-zsh.dev/docs/troubleshooting/): Common issues and solutions.
+- [Configuration Reference](https://vibe-zsh.dev/docs/reference/): Complete environment variable reference.
+- [API Reference](https://vibe-zsh.dev/docs/api/): Internal API and architecture for developers and contributors.
+
+## Optional
+
+- [GitHub Repository](https://github.com/skymoore/vibe-zsh): Source code, issues, and releases.
